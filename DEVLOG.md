@@ -17385,3 +17385,14 @@ owner-ului); ordinul „unește ce se poate”
 - **Sonda** (`scripts/masura-relief.ts`) primește pasul pe trecere: la 0,3, într-o trecere, 69,4 s și 3,1 GB.
 - Cu `main` adus (`f0d031e7`, 18.1↑j unită).
 
+## 2026-11-28 — 18.1↑h-5: câmpul și cota pe o bandă de rânduri (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 2a, cu recomandarea aplicată (confirmată de sesiunea principală). **Started:** 28.11,
+11:37, pe `wip/18.1-relief`, după 18.1↑h-4. **Completed:** 28.11, 11:46.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `campPeCelula` și `campConservativ` pe rândurile unei benzi, cu nodurile pe două
+  rânduri; `pregateste(r, { j0, j1 })`; `cotaSegment` cu rândul global al frunzelor. Fără bandă, programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.banda.test.ts` (3). **Otrăvurile:** `18.1h5.py`, 6 / 6.
+- **Măsurat:** vârful memoriei la degroșare, la 4000², 1 728 → 1 245 MB. Sonda spune vârful procesului (`maxRSS`).
+- **ADR 0323:** implementarea 2a (banda) și întrebarea 6 (mișcările finisării ținute compact).
+

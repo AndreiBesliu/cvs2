@@ -136,3 +136,29 @@ deci maximul e cel al parcurgerii tuturor celulelor.
 - **Ce rămâne pentru prag (10 s):** liniile pe workere (aproape liniar cu nucleele: liniile sunt independente) și memoria (2a),
   unde mișcările unei finisări la 0,3, ținute toate, cer singure peste 2 GB.
 
+## Implementarea 2a, întâi banda (felia 18.1↑h-5)
+
+`campPeCelula` (și `campConservativ`, la q = 1) socotește doar rândurile de calcul [j0, j1) ale unei benzi, iar nodurile grilei
+de calcul stau pe două rânduri, nu într-un tablou cu toate, (mx + 1)(my + 1): un nod e cota modelului în colțul lui, deci aceeași
+pe bandă ca pe tot relieful. `pregateste(r, { j0, j1 })` ține câmpul și piramida doar pentru bandă; `cotaSegment` socotește
+cutiile frunzelor cu rândul global (începutul benzii plus cel local, întregi, apoi înmulțite), deci, cât banda cuprinde tot ce e
+în raza frezei de segment, cota e aceeași, bit cu bit. Fără bandă, totul e ca înainte: programele, octet cu octet.
+
+- **Proba:** `test/unit/reliefFinisare.banda.test.ts`: câmpul pe bandă = rândurile lui din câmpul întreg (`Object.is`), la toate
+  diviziunile (q = 1 … 16), și la margini; cota pe bandă = cota pe tot relieful, cu peretele și fără, pe segmente la întâmplare,
+  toate frezele; memoria câmpului, cât banda. **Otrăvurile:** `18.1h5.py`, 6 / 6.
+- **Măsurat** (4000², un fir): vârful memoriei la degroșare, 1 728 → 1 245 MB (tabloul nodurilor, ~0,5 GB, nu mai e ținut);
+  timpii, neschimbați. La finisare, vârful (2,2 GB la pasul 0,5) e dat acum de mișcările ținute toate (~150 de octeți pe
+  mișcare, ca obiecte IR), nu de câmp.
+- **Ce urmează:** liniile pe workere (fiecare cu banda lui de relief, deci memoria câmpului împărțită la numărul lor) și o
+  întrebare nouă (6, mai jos), pentru mișcări.
+
+## Întrebarea 6: mișcările finisării, ținute compact (recomandarea întâi)
+
+La 4000² cu pasul 0,3, finisarea are 10,6 M de mișcări; ca obiecte IR (`Miscare`, cu `la` al ei) cer ~1,6 GB, peste câmp. Plafonul
+punctelor (20 M) le ține sub ce cade o filă.
+
+- **a) Mișcările reliefului ținute în tablouri (X, Y, Z, felul), până la post, cu un ADR al IR-ului (recomandat):** ~32 de octeți
+  pe mișcare, deci de ~5 ori mai puțin; programul scris, același, octet cu octet; plafonul punctelor urcă după ea.
+- b) Plafonul rămâne 20 M, iar mișcările, obiecte (azi).
+

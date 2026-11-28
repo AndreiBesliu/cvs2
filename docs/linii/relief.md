@@ -326,4 +326,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   toate sunt acum partea cea mai grea a memoriei.
   - **Într-o căutare care ramifică și taie, distanța exactă trebuie doar pe frunze;** pe blocuri ajunge o margine de jos dovedită
     (cu o rezervă pentru rotunjiri), iar proba e forța brută peste toate celulele, la `===`.
+- **28.11: 18.1↑h-5 gata pe ramură** (2a, întâi banda): câmpul și cota pe o bandă de rânduri, bit cu bit ca pe tot relieful;
+  vârful memoriei la degroșare, 1 728 → 1 245 MB. La finisare, memoria e acum a mișcărilor (întrebarea 6 din ADR 0323).
+  - **Pe o bandă, coordonatele frunzelor se fac din rândul global, întreg, apoi înmulțit** (`(j0 + j) · h`), ca să iasă la bit
+    cele de pe tot relieful; marginea de jos a cutiilor e a reliefului, nu a benzii.
 
