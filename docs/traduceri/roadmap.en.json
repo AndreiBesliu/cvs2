@@ -2085,6 +2085,10 @@
       "ro": "Gravarea pe linie cu freza în V și gravarea inteligentă",
       "en": "Engraving on the line with a V bit, and smart engraving"
     },
+    "5ef6493e382de34b": {
+      "ro": "Valorile frezei pe material și calculatorul avansului",
+      "en": "Bit values per material, and the feed calculator"
+    },
     "5f06a637fd152da3": {
       "ro": "Fișierele lăsate pe planșă (cererea owner-ului, 13.10): unul sau mai multe SVG-uri trase pe pânză trec prin dialogul importului pe rând și cad cu centrul unde au fost lăsate",
       "en": "Files dropped on the board (the owner's request, 13.10): one or more SVGs dragged onto the canvas go through the import dialog one by one and land centred where they were dropped"
