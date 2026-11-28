@@ -28,7 +28,7 @@ import {
 } from '../model/freza.ts';
 import { CATALOG_FREZE, GRUPURI_CATALOG, tolFreza, type FrezaCatalog } from '../model/catalogFreze.ts';
 import { aceeasiGeometrie } from '../model/dinCatalog.ts';
-import { profilFreza } from '../model/profilFreza.ts';
+import { FELURI_PROFIL, profilFreza } from '../model/profilFreza.ts';
 import { PLAFON, UNGHI_V_IMPLICIT } from '../model/document.ts';
 import { cuFrezeleBrowserului, deAdusDinBrowser, type Alegere } from '../model/frezeSincron.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
@@ -38,14 +38,13 @@ import { useContTinut } from './dreptCont.ts';
 import { CHEIE_LOCALA, cheieCont, frezeMele, useFrezeMele, type ProblemeLista } from './frezeMele.ts';
 import { useSincronizare } from './frezeSincronizare.ts';
 import { cuFrezeleStandard, frezeleStandard, numePropus } from './frezeStandard.ts';
+import { EditorPuncte, PuncteFisa, type PunctText, type SursaSilueta } from './SiluetaDesenata.tsx';
 import './freze.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-/** Un punct al siluetei desenate, ca text scris de om (r, h). */
-type PunctText = readonly [string, string];
 /** Câmpurile editorului, ca text scris de om (felul și punctele siluetei desenate, separat). */
 type Ciorna = { readonly fel: FelFreza; readonly puncte: readonly PunctText[] } & { readonly [K in Exclude<CampFreza, 'puncte'>]: string };
 type CampText = 'nume' | 'nota' | 'grup';
@@ -205,6 +204,8 @@ function Silueta({ f, mare }: { readonly f: Freza; readonly mare: boolean }): Re
   const X = (r: number): number => W / 2 + r * k, Y = (h: number): number => H - m - h * k;
   // Profilul (de la vârf la diametru), apoi drept până sus, și oglinda lui în stânga.
   const profil = profilFreza(f);
+  // O siluetă desenată încă greșită (un număr nescris) nu se desenează.
+  if (!profil.every(([r, h]) => Number.isFinite(r) && Number.isFinite(h))) return <svg className="freza-silueta" viewBox="0 0 40 40" aria-hidden="true" />;
   const puncte: readonly (readonly [number, number])[] = [
     ...profil, [R, L], [-R, L], ...[...profil].reverse().map(([r, h]) => [-r, h] as const),
   ];
@@ -713,6 +714,22 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
 
   /** Grupurile omului din toată biblioteca (pentru „Grupul” din fișă și din editor). */
   const grupuri = grupurileListei(stare.freze).flatMap((g) => (g.grup !== null ? [g.grup] : []));
+  /** De unde poate porni o siluetă desenată (ADR 0304 §5): frezele bibliotecii și profilurile catalogului. */
+  const surseSilueta = useMemo(() => ({
+    biblioteca: stare.freze.map((f): SursaSilueta => ({ id: `b:${f.id}`, nume: f.nume, f })),
+    catalog: catalog.filter((x) => (FELURI_PROFIL as readonly string[]).includes(x.c.fel))
+      .map((x): SursaSilueta => ({ id: `c:${x.c.id}`, nume: x.nume, f: { ...x.c, nume: x.nume } })),
+  }), [stare.freze, catalog]);
+  /**
+   * Greșeala siluetei desenate, sub tabelul punctelor: a punctelor, altfel a diametrului dat de ultimul punct (câmpul lui nu se
+   * arată), după aceeași regulă a ferestrei: după o schimbare a punctelor sau la „Salvează”.
+   */
+  const textPuncte = ((): string | null => {
+    if (!freza || !arePuncte(freza.fel)) return null;
+    if (vizibila('puncte') && probleme.puncte) return textMotiv('puncte', probleme.puncte);
+    const vazute = toateProblemele || (ciorna !== null && initiala !== null && JSON.stringify(ciorna.puncte) !== JSON.stringify(initiala.puncte));
+    return vazute && probleme.diametru ? `${t('freze.diametru')}: ${textMotiv('diametru', probleme.diametru)}` : null;
+  })();
 
   /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */
   const fisa = (f: Freza, catalogDeja?: boolean): ReactNode => {
@@ -727,6 +744,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     if (areVarf(f.fel) && f.varf !== undefined) geometria.push(['varf', textVarf(f.fel), `${nr(f.varf)} ${mm}`]);
     if (areRaza(f.fel) && f.raza !== undefined) geometria.push(['raza', textRaza(f.fel), `${nr(f.raza)} ${mm}`]);
     if (areTreapta(f.fel) && f.treapta !== undefined) geometria.push(['treapta', t('freze.treapta'), `${nr(f.treapta)} ${mm}`]);
+    if (arePuncte(f.fel)) geometria.push(['inaltime', t('freze.inaltime'), `${nr(inaltimeCon(f))} ${mm}`]);
     if (f.tais !== undefined) geometria.push(['tais', t('freze.tais'), `${nr(f.tais)} ${mm}`]);
     if (f.taisuri !== undefined) geometria.push(['taisuri', t('freze.taisuri'), nr(f.taisuri)]);
     if (!dinCat) geometria.push(['numar', t('freze.numar'), `T${f.numar}`]);
@@ -786,6 +804,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
             <Silueta f={f} mare />
           </figure>
         </div>
+        {arePuncte(f.fel) && f.puncte ? <PuncteFisa puncte={f.puncte} ro={ro} /> : null}
         <section className="freze-fisa-parte" aria-labelledby="freze-fisa-lucru">
           <h4 id="freze-fisa-lucru">{t('freze.lucru')}</h4>
           {valori(lucru)}
@@ -1037,6 +1056,12 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                   <Silueta f={freza} mare />
                 </figure>
               </div>
+              {arePuncte(fel) ? (
+                <EditorPuncte puncte={ciorna.puncte} dezactivat={doarCitire} ro={ro} surse={surseSilueta}
+                  problema={vizibila('puncte') ? problemaPuncte(freza.puncte, null) : null} textProblema={textPuncte}
+                  onPuncte={(p) => { setCiorna((c) => (c ? { ...c, puncte: p } : c)); setMesaj(''); }}
+                  onPornit={(n, k) => { setMesaj(t('freze.puncte.pornit', { nume: n, n: k })); }} />
+              ) : null}
               <fieldset>
                 <legend>{t('freze.geometria')}</legend>
                 <div className="freze-grila">

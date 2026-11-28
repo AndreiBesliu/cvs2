@@ -1535,6 +1535,23 @@ nose on the line, in a pocket and on one side, the profiles on the line (a groov
 in your library and in the catalogue, marked **coming to projects**: in the Cutting section you can pick them once the app can
 cut them. A veining (core box) bit is a **Ball**.
 
+**Drawn** is a bit whose outline you draw yourself, point by point: a profile bit the catalogue does not have (a custom edge,
+a stepped bit). In projects it is picked like the profiles: on the line (a groove) and on one side (a profiled edge, with a
+flat bottom). In the editor, **Drawn outline** has the drawing to scale, the **Start from…** list and the table of points:
+- each point has **r**, the distance from the bit axis, and **h**, the height above the tip, in mm. The first point is the bit
+  tip, fixed at (0, 0); r grows from one point to the next and h does not go down (the outline does not turn down). The last
+  point gives the diameter: its r is half of it. From 2 to 200 points;
+- **+** adds a point after the one on its row (halfway between two points; after the last one, 1 mm further out), and **✕**
+  removes the point;
+- on the drawing, drag a point with the mouse (or a finger): it snaps to 0.1 mm and stays between its neighbours. With the focus
+  on a point, the arrow keys move it by 0.1 mm, and with Shift by 1 mm;
+- **Start from…** copies the outline of a bit from your library or of a catalogue profile (roundover, ogee, Roman ogee, raised
+  panel), which you then change. An arc becomes lines, at most 0.001 mm away from it;
+- a mistake (an r that does not grow, an h that goes down) is shown under the table with the point's number, and its row turns
+  red.
+
+Points are kept to 0.0001 mm. The details of a drawn bit show the diameter, the **Outline height** and the **Outline points**.
+
 **New bit** opens the editor, with the fields:
 - **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
   0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
@@ -1565,8 +1582,8 @@ missing ones.
 
 **Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
 computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
-(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman` or `panou`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
-`pas_lateral`, `tais`, `taisuri`, `nota` and `grup`, in any order (`raza` for bull nose, tapered and profile bits, `treapta` for the Roman ogee, `varf` for engraving and raised panel bits). Only `nume`, `fel` and `diametru` are required; without the others,
+(`plata`, `v`, `gravare`, `bila`, `toroidala`, `conica`, `burghiu`, `rotunjire`, `ogee`, `ogee-roman`, `panou` or `desenata`), `diametru`, `unghi`, `varf`, `raza`, `treapta`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri`, `nota`, `grup` and `puncte`, in any order (`raza` for bull nose, tapered and profile bits, `treapta` for the Roman ogee, `varf` for engraving and raised panel bits). A drawn bit (`fel` `desenata`) has its points in `puncte`, r and h pairs separated by “|” (for example `0 0 | 2 0 | 3 1.5 | 6 4`); without a diameter, it comes from the last point. Only `nume`, `fel` and `diametru` are required; without the others,
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
