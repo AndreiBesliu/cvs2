@@ -169,3 +169,9 @@ test('litofania: grosimile pe dos sau negative sunt refuzate', async () => {
     assert.deepEqual(r, { ok: false, cod: 'grosimi' }, `${tmin} … ${tmax}`);
   }
 });
+
+test('litofania: rama în mm, rotunjită la celule de alt pixel decât 1 mm (1 mm la un pixel de 0,5 mm = 2 celule)', async () => {
+  const px = pixeli(2, 1, () => [255, 255, 255, 255]);
+  const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: px, optiuni: O, scara: { latimeMm: 1 }, litofanie: { tmin: 0.8, tmax: 3, ramaMm: 1, spate: false } }), 'din-imagine');
+  assert.deepEqual([r.nx, r.ny, r.celula], [6, 5, 0.5]);
+});
