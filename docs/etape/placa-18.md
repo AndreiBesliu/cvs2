@@ -124,3 +124,80 @@ Valorile intră ca date ale frezelor (ADR 0300), citite și de CAM, și de oraco
 
 Trimite-mi cotele măsurate (sau poze cu șublerul pe fiecare), timpii și `$$`. Ele intră în teste ca transcrierea plăcii, legată de
 aceste fișiere de aur.
+
+## Partea a doua: litofania (felia 18.1↑i)
+
+**Ce probează:** litofania (ADR 0321): o placă translucidă a cărei grosime urmează imaginea, tăiată cu planul zero la grosimea
+plăcii, deci cu grosimea rămasă exact cea din harta litofaniei. Trei pătrate de gri, cu grosimile lor pe hârtie. Ca la partea
+întâi, fiecare valoare e prezisă de oracolul independent al simulării (`test/unit/placa18.litofanie.test.ts`), iar programele
+sunt scrise de aplicație pe drumul ei (`test/placi/placa-18/genereaza-litofanie.ts`): harta grosimilor ca din fereastra
+„Litofanie”, rolul „Relief 3D” cu planul zero la 6 mm, câte un fișier pe freză, GRBL 1.1.
+
+### Ce îți trebuie
+
+- O **placă albă translucidă de 6 mm** (din răspunsul 6a la ADR 0310: Corian, acril opal sau PVC expandat alb), de cel puțin
+  **100 × 50 mm**. Litofania stă în ea între x 20 și 80, y 15 și 35.
+- Două freze cu Ø3: **plată** (T1) și **bilă** (T2).
+- Un micrometru sau un șubler pentru grosime și o lampă (sau o fereastră luminoasă) pentru proba din spate.
+
+### Litofania
+
+Trei pătrate de 20 × 20 mm, de la stânga la dreapta, cu grosimea rămasă pe hârtie (lumina liniară: t = 3 − L · 2,2, cu L griul
+pixelului): placa din jur rămâne netăiată, deci e rama.
+
+| Pătratul | Unde (centrul) | Griul | Grosimea rămasă | Adâncimea de la față |
+|---|---|---:|---:|---:|
+| 1 | (30, 25) | alb (255) | 0,80 | 5,20 |
+| 2 | (50, 25) | gri (128) | 1,90 (1,8957) | 4,10 |
+| 3 | (70, 25) | negru (0) | 3,00 | 3,00 |
+
+### Fișierele
+
+| Fișierul | Freza | Ce taie | Linii | SHA-256 |
+|---|---|---|---:|---|
+| [placa-18-litofanie-1-T1.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-18/placa-18-litofanie-1-T1.nc) | plată Ø3 | degroșarea: trepte de 2 mm, liniile la 1,2 mm, adaosul 0,3 | 416 | `b284b14f7a6b63069d2597d1c5d0011bf8d0fa5559730c92a785f3737268c385` |
+| [placa-18-litofanie-2-T2.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-18/placa-18-litofanie-2-T2.nc) | bilă Ø3 | finisarea: treceri de 2 mm, liniile la 0,5 mm | 3 936 | `1e8255bc909c802569580edc837ddef6e77462ba879300cff54fe4cd7f567dd8` |
+
+### Cum le tai
+
+1. Prinde placa pe masă, plat (o placă de 6 mm se îndoaie ușor: bandă dublu adezivă pe toată fața de jos). Zero X și Y e în
+   colțul stânga-jos al plăcii, iar **Z0 e pe fața de sus**.
+2. Rulează **T1** (freza plată), apoi **măsoară grosimile „după T1”**.
+3. Schimbă freza cu bila și **refă doar zero Z**, pe fața de sus. X și Y rămân.
+4. Rulează **T2**.
+
+Regimul e cel implicit al aplicației (18 000 rot/min, avansul 1 000 mm/min, plonjarea 300 mm/min). Pe acril sau PVC, dacă
+materialul se topește, coboară turația sau urcă avansul: valorile se pot schimba din fereastra exportului, fără să atingă drumul.
+
+### Timpul (ADR 0046)
+
+| Fișierul | Pe setările din fabrică ale GRBL 1.1h |
+|---|---:|
+| placa-18-litofanie-1-T1.nc | 8 min 22 s |
+| placa-18-litofanie-2-T2.nc | 16 min 59 s |
+
+### Ce măsori
+
+Grosimea rămasă, în mijlocul fiecărui pătrat (micrometrul, cu placa scoasă; sau adâncimea de la față, cu tija șublerului).
+
+| Cota | Unde (x, y) | După T1 | După T2 | Toleranța |
+|---|---|---:|---:|---:|
+| grosimea pătratului 1 | (30, 25) | 1,10 | 0,80 | ±0,05 |
+| grosimea pătratului 2 | (50, 25) | 2,20 | 1,90 | ±0,05 |
+| grosimea pătratului 3 | (70, 25) | 3,30 | 3,00 | ±0,05 |
+| creasta finisării | între două linii | — | 0,021 | ±0,02 |
+| rama | în jurul pătratelor | netăiată | netăiată | — |
+
+Valorile pe hârtie:
+- **după T1**, freza plată lasă pe fiecare pătrat exact adaosul, 0,3 mm, peste grosimea finală;
+- **creasta** bilei Ø3 la 0,5 mm între linii: 1,5 − √(1,5² − 0,25²) = 0,021 mm, greu de simțit cu degetul;
+- **la treptele dintre pătrate și la pereți:** un racord cu raza bilei (1,5 mm).
+
+**Cu lumina din spate**, cele trei pătrate trebuie să se vadă ca trei griuri distincte, de la deschis (stânga) la închis
+(dreapta). O poză cu placa în fața lămpii arată cât de liniară e lumina materialului: ea alimentează lumina după material
+(felia 18.1↑f-2, ADR 0321 §8).
+
+### Rezultatul
+
+Trimite-mi grosimile măsurate, timpii, `$$` și poza cu lumina din spate. Ele intră în teste ca transcrierea litofaniei, legată
+de aceste fișiere de aur.
