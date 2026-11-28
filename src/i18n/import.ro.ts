@@ -421,6 +421,8 @@ export const roImport = {
   'import.relief.sens.negru': 'Negru = sus',
   'import.relief.inaltime': 'Înălțimea',
   'import.relief.baza': 'Baza (planul zero)',
+  'import.relief.z-fisier': 'Z-ul și celula din fișier ({min} … {max} mm, celula de {celula} mm)',
+  'import.relief.16-biti': 'Imaginea are 16 biți: înălțimea folosește toate cele 65 536 de trepte ale griului.',
   'import.relief.latime.strat': 'Lățimea imaginii pe relief',
   'import.relief.unde': 'Unde merge imaginea',
   'import.relief.unde.piesa': 'O piesă nouă',

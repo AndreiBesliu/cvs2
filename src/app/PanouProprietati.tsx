@@ -240,6 +240,8 @@ export function PanouProprietati({
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
   const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  // Exportul reliefului ca PNG pe 16 biți (ADR 0322), pentru relieful de atunci.
+  const [png, setPng] = useState<{ readonly cheie: string; readonly stare: 'lucru' | 'ok' | 'lipsa' | 'eroare' } | null>(null);
   // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis, citită din
   // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
   // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
@@ -770,6 +772,19 @@ export function PanouProprietati({
             <p className="prop-grup">{t('prop.relief.straturi')}</p>
             <StraturiRelief cheie={`${cheie}/${id}`} forma={f} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})}
               onSchimba={onStraturi ? (nou) => onStraturi(nou, id) : undefined} />
+            {/* Relieful ca imagine pe 16 biți (ADR 0322): adus la primul clic; cu straturile lipsă din browser, oprit. */}
+            <button type="button" data-buton="relief-png" disabled={!d || (png?.cheie === `${cheie}/${id}` && png.stare === 'lucru')}
+              onClick={() => {
+                const k = `${cheie}/${id}`;
+                setPng({ cheie: k, stare: 'lucru' });
+                import('./reliefPng.ts').then((m) => m.exportaReliefPng(f, piesa.nume ?? id)).then((stare) => { setPng({ cheie: k, stare }); },
+                  () => { setPng({ cheie: k, stare: 'eroare' }); });
+              }}>
+              {t('prop.relief.png')}
+            </button>
+            {png?.cheie === `${cheie}/${id}` && png.stare !== 'ok' && (
+              <p className={png.stare === 'lucru' ? 'prop-nota-piesa' : 'camp-motiv'} role="status" data-testid="relief-png-stare">{t(`prop.relief.png.${png.stare}`)}</p>
+            )}
             {d === null && <p className="camp-motiv" data-testid="prop-relief-lipsa">{t('prop.relief.lipsa')}</p>}
           </section>
         );

@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { crc32, deflateSync, inflateSync } from 'node:zlib';
-import { citestePng, scriePngGri16 } from '../../src/io/png16.ts';
+import { citestePng, scriePngGri16 } from '../../src/relief/png16.ts';
 
 const SEMN = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const bloc = (tip: string, d: Buffer): Buffer => {

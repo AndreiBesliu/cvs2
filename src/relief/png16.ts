@@ -1,11 +1,27 @@
 /**
- * PNG-ul pe 16 biți al reliefului (ADR 0322, felia 18.1↑g): scriitorul unei imagini gri pe 16 biți (cu textul și scara) și un
+ * PNG-ul pe 16 biți al reliefului (ADR 0322, felia 18.1↑g), în `src/relief` (îl folosește workerul reliefului, care nu importă
+ * ușile): scriitorul unei imagini gri pe 16 biți (cu textul și scara) și un
  * cititor pentru ce browserul nu dă (el decodează orice PNG pe 8 biți): tipurile de culoare 0, 2, 4, 6, pe 8 și 16 biți, filtrele
  * 0–4, fără întrețesere (refuzată). Compresia prin `CompressionStream` / `DecompressionStream`, deci aceeași în Node și în
  * browser. Ieșirea cititorului e RGBA, rândurile de sus în jos, scalată la 0 … 255 (cu zecimale la 16 biți), ca pixelii unei
  * imagini decodate de browser.
  */
-import { crc32 } from './crc32.ts';
+
+/** CRC-32 al PNG-ului (polinomul 0xEDB88320), aici: relieful nu importă ușile (`src/io/crc32.ts` face același calcul). */
+const TABEL_CRC = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(b: Uint8Array): number {
+  let c = 0xffffffff;
+  for (const x of b) c = (TABEL_CRC[(c ^ x) & 0xff] ?? 0) ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
 
 const SEMNATURA = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 

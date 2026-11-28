@@ -186,7 +186,7 @@ test('spre PNG: compusul straturilor vizibile, scalat între z_min și z_max pe 
   ];
   const r = await reliefInBazin({ tip: 'spre-png', nx: 3, ny: 2, celula: 0.5, straturi });
   if (!r.ok || r.tip !== 'png') assert.fail(JSON.stringify(r));
-  const { citestePng } = await import('../../src/io/png16.ts');
+  const { citestePng } = await import('../../src/relief/png16.ts');
   const p = await citestePng(r.octeti);
   if ('eroare' in p) assert.fail(p.eroare);
   assert.deepEqual([p.latime, p.inaltime, p.adancime, p.pixeliPeMetru], [3, 2, 16, 2000]);
@@ -225,7 +225,7 @@ test('din PNG pe 16 biți, cu Z-ul din fișier: relieful revine cum a plecat (ce
 });
 
 test('din PNG pe 16 biți, fără Z-ul din fișier: înălțimea și baza ferestrei, pe griul de 16 biți', async () => {
-  const { scriePngGri16 } = await import('../../src/io/png16.ts');
+  const { scriePngGri16 } = await import('../../src/relief/png16.ts');
   const png = await scriePngGri16(Uint16Array.from([0, 32768, 65535]), 3, 1);
   const r = ok(await reliefInBazin({ tip: 'din-imagine', imagine: new Blob([png.slice()]), optiuni: O, scara: { latimeMm: 3 } }), 'din-imagine');
   assert.equal(r.fisier?.adancime, 16);

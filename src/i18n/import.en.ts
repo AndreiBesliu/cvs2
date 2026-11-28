@@ -407,6 +407,8 @@ export const enImport = {
   'import.relief.sens.negru': 'Black = high',
   'import.relief.inaltime': 'Height',
   'import.relief.baza': 'Base (zero plane)',
+  'import.relief.z-fisier': 'Z and cell from the file ({min} … {max} mm, cell of {celula} mm)',
+  'import.relief.16-biti': 'The image has 16 bits: the height uses all 65,536 grey steps.',
   'import.relief.latime.strat': 'Image width on the relief',
   'import.relief.unde': 'Where the image goes',
   'import.relief.unde.piesa': 'A new part',

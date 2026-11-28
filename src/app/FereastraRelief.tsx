@@ -73,6 +73,8 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
   const nr = (x: number, z = 3): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: z }).format(x);
   const [optiuni, setOptiuni] = useState<OptiuniImagine>(tinute);
   const [lit, setLit] = useState<Litofanie>(tinuteLit);
+  /** Z-ul și celula din fișier (ADR 0322 §2), la un PNG pe 16 biți scris de aplicație: implicit da. */
+  const [zFisier, setZFisier] = useState(true);
   const schimbaLit = (s: Partial<Litofanie>): void => {
     const o = { ...lit, ...s };
     tinuteLit = o;
@@ -115,7 +117,8 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
     const ceas = setTimeout(() => {
       const scara = latime !== null ? { latimeMm: latime } : pe ? { latimeMm: pe.nx * pe.celula } : { dpi };
       const grila = pe ? { pe: { nx: pe.nx, ny: pe.ny, celula: pe.celula } } : {};
-      const felul = litofanie ? { litofanie: lit } : {};
+      // Z-ul din fișier doar pentru un relief nou: litofania își face grosimile, iar un strat ia grila reliefului ales.
+      const felul = litofanie ? { litofanie: lit } : pe ? {} : { zDinFisier: zFisier };
       reliefInBazin({ tip: 'din-imagine', imagine: new Blob([octeti.slice()]), optiuni, scara, ...grila, ...felul }, { semnal: ac.signal }).then((r) => {
         if (!ac.signal.aborted) setRez(r);
       }, (e: unknown) => {
@@ -125,7 +128,7 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
       });
     }, ASTEPTARE_MS);
     return () => { clearTimeout(ceas); ac.abort(); };
-  }, [octeti, optiuni, latime, dpi, pe, litofanie, lit]);
+  }, [octeti, optiuni, latime, dpi, pe, litofanie, lit, zFisier]);
 
   const ok: ReliefDinImagine | null = rez !== 'calcul' && rez.ok && rez.tip === 'din-imagine' ? rez : null;
   const pregatit = useMemo(() => (ok && !pe ? pregatitRelief(ok, nume) : null), [ok, nume, pe]);
@@ -196,6 +199,12 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
                   {(['l', 'r', 'g', 'b'] as const).map((s) => <option key={s} value={s}>{t(`import.relief.sursa.${s}`)}</option>)}
                 </select>
               </label>
+              {ok?.fisier && !litofanie && !pe && (ok.fisier.celula !== undefined ? (
+                <label className="rand">
+                  <input type="checkbox" checked={zFisier} data-camp="relief-z-fisier" disabled={lucru} onChange={(e) => { setZFisier(e.target.checked); }} />
+                  {t('import.relief.z-fisier', { min: nr(ok.fisier.zMin ?? 0), max: nr(ok.fisier.zMax ?? 0), celula: nr(ok.fisier.celula, 4) })}
+                </label>
+              ) : <p className="mic" data-testid="relief-16-biti">{t('import.relief.16-biti')}</p>)}
               {litofanie ? (
                 <>
                   <label className="rand">

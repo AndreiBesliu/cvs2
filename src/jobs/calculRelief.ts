@@ -5,7 +5,7 @@
  * cuantizate, deci e exact ce se salvează și ce se taie (§2).
  */
 import { compune, type Mod } from '../relief/compunere.ts';
-import { adancimePng, citestePng, scriePngGri16 } from '../io/png16.ts';
+import { adancimePng, citestePng, scriePngGri16 } from '../relief/png16.ts';
 import { asezaPeGrila } from '../relief/asezare.ts';
 import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA, motivGrila, type Grila } from '../relief/grila.ts';
 import { dalaDinOcteti, type Dala } from '../relief/dala.ts';
