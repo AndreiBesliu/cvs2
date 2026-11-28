@@ -23,13 +23,13 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { citesteFisierFreze, textFisierFreze, type MotivFisierFreze } from '../io/frezeFisier.ts';
 import {
-  areCam, areRaza, areTreapta, areUnghi, areVarf, cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
-  type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
+  areCam, arePuncte, areRaza, areTreapta, areUnghi, areVarf, cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
+  problemaPuncte, puncteDesenate, type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { CATALOG_FREZE, GRUPURI_CATALOG, tolFreza, type FrezaCatalog } from '../model/catalogFreze.ts';
 import { aceeasiGeometrie } from '../model/dinCatalog.ts';
 import { profilFreza } from '../model/profilFreza.ts';
-import { UNGHI_V_IMPLICIT } from '../model/document.ts';
+import { PLAFON, UNGHI_V_IMPLICIT } from '../model/document.ts';
 import { cuFrezeleBrowserului, deAdusDinBrowser, type Alegere } from '../model/frezeSincron.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
@@ -44,10 +44,12 @@ import './freze.css';
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-/** Câmpurile editorului, ca text scris de om (felul, separat). */
-type Ciorna = { readonly fel: FelFreza } & { readonly [K in Exclude<CampFreza, never>]: string };
+/** Un punct al siluetei desenate, ca text scris de om (r, h). */
+type PunctText = readonly [string, string];
+/** Câmpurile editorului, ca text scris de om (felul și punctele siluetei desenate, separat). */
+type Ciorna = { readonly fel: FelFreza; readonly puncte: readonly PunctText[] } & { readonly [K in Exclude<CampFreza, 'puncte'>]: string };
 type CampText = 'nume' | 'nota' | 'grup';
-const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText>[] = [
+const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText | 'puncte'>[] = [
   'diametru', 'unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral',
 ];
 const OPTIONALE: ReadonlySet<CampFreza> = new Set(['tais', 'taisuri', 'raza', 'treapta']);
@@ -102,6 +104,7 @@ function ciornaDin(f: Freza, ro: boolean, numeGol = false): Ciorna {
     treapta: fara(f.treapta, ro), tais: fara(f.tais, ro),
     taisuri: fara(f.taisuri, ro), numar: fara(f.numar, ro), turatie: fara(f.turatie, ro), avans: fara(f.avans, ro),
     plonjare: fara(f.plonjare, ro), pas: fara(f.pas, ro), pasLateral: fara(f.pasLateral, ro),
+    puncte: (f.puncte ?? []).map(([r, h]): PunctText => [fara(r, ro), fara(h, ro)]),
   };
 }
 
@@ -118,6 +121,12 @@ function frezaDin(c: Ciorna, ro: boolean): Freza {
   if (!areVarf(c.fel)) v['varf'] = undefined;
   if (!areRaza(c.fel)) v['raza'] = undefined;
   if (!areTreapta(c.fel)) v['treapta'] = undefined;
+  if (arePuncte(c.fel)) {
+    // Silueta desenată: punctele scrise (un număr greșit e NaN), iar diametrul e de două ori raza ultimului punct.
+    const P = c.puncte.map(([r, h]): [number, number] => [citesteNumar(r.trim()) ?? Number.NaN, citesteNumar(h.trim()) ?? Number.NaN]);
+    v['puncte'] = P;
+    v['diametru'] = P.length > 0 ? 2 * P[P.length - 1]![0] : Number.NaN;
+  }
   const f = v as FrezaFaraNume;
   return { ...f, nume: c.nume.trim() === '' ? numePropus(f, ro) : c.nume };
 }
@@ -146,6 +155,12 @@ const PROFIL_IMPLICIT: Readonly<Partial<Record<FelFreza, { readonly d: number; r
   rotunjire: { d: 12, raza: 3 }, ogee: { d: 18, raza: 3 }, 'ogee-roman': { d: 21, raza: 3, treapta: 1.5 }, panou: { d: 50.8 },
 };
 
+/** Punctele siluetei desenate, ca text, din silueta altei freze („Pornește de la…”); una greșită dă (0, 0), (3, 0), (6, 3). */
+function punctePornire(f: Freza, ro: boolean): readonly PunctText[] {
+  const p = puncteDesenate(f) ?? [[0, 0], [3, 0], [6, 3]];
+  return p.map(([r, h]): PunctText => [textNumar(r, ro), textNumar(h, ro)]);
+}
+
 /**
  * Ciorna cu alt fel: unghiul, vârful, raza și treapta primesc valorile obișnuite ale felului, unde lipsesc sau erau ale altui
  * fel; la un profil, diametrul se schimbă doar dacă cel scris nu-l cuprinde (pe Ø6, o rotunjire R3 n-ar avea vârf).
@@ -160,7 +175,10 @@ function cuFel(c: Ciorna, x: FelFreza, ro: boolean): Ciorna {
   const razaFel = p ? p.raza : x === 'toroidala' ? 1 : 0.5;
   const raza = areRaza(x) && (gol(c.raza) || x !== c.fel) ? (razaFel === undefined ? '' : textNumar(razaFel, ro)) : c.raza;
   const treapta = areTreapta(x) && (gol(c.treapta) || x !== c.fel) ? textNumar(p?.treapta ?? 1.5, ro) : c.treapta;
-  const n = { ...c, fel: x, unghi, varf, raza, treapta };
+  // Silueta desenată pornește de la silueta frezei din editor (o plată Ø6 dă (0, 0), (3, 0)); o freză încă greșită, de la una
+  // obișnuită. Înapoi pe alt fel, punctele rămân în ciornă (se întorc dacă omul revine), dar nu intră în freză.
+  const puncte = x === 'desenata' && (x !== c.fel || c.puncte.length < 2) ? punctePornire(frezaDin(c, ro), ro) : c.puncte;
+  const n = { ...c, fel: x, unghi, varf, raza, treapta, puncte };
   if (!p) return n;
   // Diametrul: cel scris, dacă profilul încape în el; altfel, cel obișnuit al profilului.
   const incape = (d: string): boolean => {
@@ -592,15 +610,16 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     return () => { document.removeEventListener('keydown', asculta); };
   }, []);
 
-  const scrie = (k: Exclude<CampFreza, never>) => (e: ChangeEvent<HTMLInputElement>): void => {
+  const scrie = (k: Exclude<CampFreza, 'puncte'>) => (e: ChangeEvent<HTMLInputElement>): void => {
     const v = e.currentTarget.value;
     setCiorna((c) => (c ? { ...c, [k]: v } : c));
     setMesaj('');
   };
-  const vizibila = (k: CampFreza): boolean => !!probleme[k] && (toateProblemele || (ciorna !== null && initiala !== null && ciorna[k] !== initiala[k]));
+  const vizibila = (k: CampFreza): boolean => !!probleme[k] && (toateProblemele
+    || (ciorna !== null && initiala !== null && JSON.stringify(ciorna[k]) !== JSON.stringify(initiala[k])));
   const textMotiv = (k: CampFreza, m: MotivFreza): string => {
     switch (m) {
-      case 'lipsa': return t('freze.motiv.lipsa');
+      case 'lipsa': return k === 'puncte' ? t('freze.motiv.puncte.lipsa') : t('freze.motiv.lipsa');
       case 'intreg': return t('freze.motiv.intreg');
       case 'varf': return t('freze.motiv.varf');
       case 'con': return t(freza!.fel === 'v' || freza!.fel === 'gravare' ? 'freze.motiv.con' : 'freze.motiv.capat', { con: textNumar(Math.ceil(inaltimeCon(freza!) * 1000) / 1000, ro) });
@@ -611,6 +630,16 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       case 'nota-lunga': return t('freze.motiv.nota-lunga', { max: MARGINI_FREZA.nota });
       case 'grup-lung': return t('freze.motiv.nume-lung', { max: MARGINI_FREZA.grup });
       case 'grup-caractere': return t('freze.motiv.nume-caractere');
+      case 'puncte-putine': return t('freze.motiv.puncte.lipsa');
+      case 'puncte-multe': return t('freze.motiv.puncte.multe', { max: PLAFON.puncteProfil });
+      case 'puncte-inceput': return t('freze.motiv.puncte.inceput');
+      case 'puncte-capat': return t('freze.motiv.puncte.capat');
+      case 'puncte-numar': case 'puncte-r': case 'puncte-h': {
+        // Numărul punctului, ca în tabel (de la 1).
+        const n = (problemaPuncte(freza!.puncte, null)?.punct ?? 0) + 1;
+        if (m === 'puncte-numar') return t('freze.motiv.puncte.numar', { n, rmax: textNumar(PLAFON.diametruScula, ro), hmax: textNumar(PLAFON.adancimeOperatie, ro) });
+        return t(m === 'puncte-r' ? 'freze.motiv.puncte.r' : 'freze.motiv.puncte.h', { n });
+      }
       case 'margini':
         if (k === 'unghi') {
           return t('freze.motiv.unghi', { min: MARGINI_FREZA.unghiMinim, max: freza!.fel === 'panou' ? MARGINI_FREZA.unghiPanou : MARGINI_FREZA.unghiMaxim });
@@ -624,7 +653,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
         return t('freze.motiv.margini', { max: textNumar(MAXIM[k] ?? 0, ro) });
     }
   };
-  const camp = (k: Exclude<CampFreza, CampText>, eticheta: string, unitate: string | null): ReactNode => {
+  const camp = (k: Exclude<CampFreza, CampText | 'puncte'>, eticheta: string, unitate: string | null): ReactNode => {
     const p = vizibila(k) ? probleme[k] : undefined;
     return (
       <label className="freze-camp" key={k}>
@@ -1011,7 +1040,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
               <fieldset>
                 <legend>{t('freze.geometria')}</legend>
                 <div className="freze-grila">
-                  {camp('diametru', t('freze.diametru'), t('freze.unitate.mm'))}
+                  {arePuncte(fel) ? null : camp('diametru', t('freze.diametru'), t('freze.unitate.mm'))}
                   {areUnghi(fel) ? camp('unghi', textUnghi(fel), t('freze.unitate.grade')) : null}
                   {areVarf(fel) ? camp('varf', textVarf(fel), t('freze.unitate.mm')) : null}
                   {areRaza(fel) ? camp('raza', textRaza(fel), t('freze.unitate.mm')) : null}

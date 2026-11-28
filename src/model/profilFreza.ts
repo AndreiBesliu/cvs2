@@ -9,6 +9,8 @@
 export type CampuriProfil = {
   readonly fel: string; readonly diametru: number; readonly unghi?: number | undefined; readonly varf?: number | undefined;
   readonly raza?: number | undefined; readonly treapta?: number | undefined;
+  /** Punctele siluetei desenate (felul `desenata`, ADR 0304 §5): (r, h), de la (0, 0) la (Ø / 2, capătul). */
+  readonly puncte?: ReadonlyArray<readonly [number, number]> | undefined;
 };
 
 export type PunctProfil = readonly [number, number];
@@ -30,6 +32,11 @@ export function inaltimeCon(f: CampuriProfil): number {
     case 'toroidala': case 'rotunjire': return finit(f.raza) ? f.raza : 0;
     case 'ogee': return finit(f.raza) ? 2 * f.raza : 0;
     case 'ogee-roman': return finit(f.raza) && finit(f.treapta) ? 2 * f.raza + f.treapta : 0;
+    // Silueta desenată (16.A↑f-5): h-ul ultimului punct.
+    case 'desenata': {
+      const h = Array.isArray(f.puncte) ? f.puncte[f.puncte.length - 1]?.[1] : undefined;
+      return finit(h) ? h : 0;
+    }
     case 'panou': {
       if (!finit(f.unghi) || !finit(f.varf)) return 0;
       const b = (f.unghi * Math.PI) / 180;
@@ -67,6 +74,8 @@ export function profilFreza(f: CampuriProfil, pasi: PasiArc = 12): readonly Punc
   const exact = (p: PunctProfil[], de: PunctProfil, pana: PunctProfil): PunctProfil[] => p.map((q, i) => (i === 0 ? de : i === p.length - 1 ? pana : q));
   switch (f.fel) {
     case 'plata': return [[0, 0], [R, 0]];
+    // Silueta desenată: chiar punctele ei (cât se scriu în editor, pot fi și greșite: le judecă `problemaPuncte`).
+    case 'desenata': return Array.isArray(f.puncte) && f.puncte.length >= 2 ? f.puncte : [[0, 0], [R, 0]];
     case 'bila': return arc(0, R, R, -Math.PI / 2, 0).map(([r, h], i) => (i === 0 ? [0, 0] : [r, h]));
     case 'toroidala': {
       const rc = f.raza ?? 0;
@@ -119,13 +128,11 @@ const PAS_TREAPTA = 1e-4;
 const PUNCTE_MAXIM = 200;
 
 /**
- * Silueta unui profil parametric, cum intră în document (ADR 0304 §1): linii de la (0, 0) la (Ø / 2, capătul), fiecare arc
- * împărțit cât coarda lui să stea la cel mult `ABATERE_PROFIL` de el (cu o margine de 10 %), r strict crescător (o treaptă
- * verticală primește `PAS_TREAPTA` pe r), h nedescrescător, capătul exact la raza frezei; null pentru felurile care nu sunt
- * profiluri sau peste 200 de puncte.
+ * Silueta frezei ca linii, de la (0, 0) la (Ø / 2, capătul): fiecare arc împărțit cât coarda lui să stea la cel mult
+ * `ABATERE_PROFIL` de el (cu o margine de 10 %), r strict crescător (o treaptă verticală primește `PAS_TREAPTA` pe r), h
+ * nedescrescător, capătul exact la raza frezei; null peste 200 de puncte sau pe o siluetă care nu e monotonă.
  */
-export function puncteProfil(f: CampuriProfil): Array<[number, number]> | null {
-  if (!(FELURI_PROFIL as readonly string[]).includes(f.fel)) return null;
+function liniiSilueta(f: CampuriProfil): Array<[number, number]> | null {
   const tinta = ABATERE_PROFIL * 0.9;
   // Coarda unui arc de unghi φ stă la r·(1 − cos(φ / 2)) de el: φ ≤ 2·acos(1 − tinta / r).
   const pasi = (r: number, unghi: number): number => (r <= tinta ? 1 : Math.max(1, Math.ceil(unghi / (2 * Math.acos(1 - tinta / r)))));
@@ -143,4 +150,57 @@ export function puncteProfil(f: CampuriProfil): Array<[number, number]> | null {
   if (rez.length < 2 || ultim[0] > R + 1e-9 || rez.length > PUNCTE_MAXIM) return null;
   ultim[0] = R;
   return rez;
+}
+
+/**
+ * Silueta unui profil parametric, cum intră în document (ADR 0304 §1): liniile siluetei (`liniiSilueta`); null pentru felurile
+ * care nu sunt profiluri sau peste 200 de puncte.
+ */
+export function puncteProfil(f: CampuriProfil): Array<[number, number]> | null {
+  return (FELURI_PROFIL as readonly string[]).includes(f.fel) ? liniiSilueta(f) : null;
+}
+
+/**
+ * Pasul la care se țin punctele unei siluete desenate (ADR 0304 §5, felia 16.A↑f-5): 0,0001 mm. Așa, o freză de 200 de puncte
+ * încape în cont (`OCTETI_FREZA`, 8 kB), iar abaterea adusă de rotunjire (cel mult 0,00007 mm) rămâne mult sub `ABATERE_PROFIL`.
+ */
+export const PAS_PUNCT = 1e-4;
+// Împărțit la 10 000, nu înmulțit cu `PAS_PUNCT`: împărțirea dă exact numărul zecimal scris (1,2346, nu 1,2346000000000001).
+const rotunjit = (x: number): number => Math.round(x / PAS_PUNCT) / 1e4;
+
+/**
+ * Punctele rotunjite la `PAS_PUNCT`, ca într-o freză ținută: toate, afară de raza capătului (aceea e jumătatea diametrului, cu
+ * oricâte zecimale ar avea el). Un punct care nu e o pereche de numere rămâne cum e (îl refuză judecata).
+ */
+export function puncteRotunjite(puncte: ReadonlyArray<readonly [number, number]>): Array<[number, number]> {
+  return puncte.map((p, i): [number, number] => {
+    if (!Array.isArray(p) || p.length !== 2 || !finit(p[0]) || !finit(p[1])) return p as unknown as [number, number];
+    return [i === puncte.length - 1 ? p[0] : rotunjit(p[0]), rotunjit(p[1])];
+  });
+}
+
+/**
+ * Silueta oricărei freze ca puncte ale unei siluete desenate („Pornește de la…”, ADR 0304 §5): liniile ei (`liniiSilueta`, sub
+ * 0,001 mm de arce), rotunjite la `PAS_PUNCT`; un punct al cărui r nu mai crește strict după rotunjire pleacă (afară de capăt),
+ * iar h nu scade. Null dacă silueta nu se poate scrie așa (peste 200 de puncte, valori greșite).
+ */
+export function puncteDesenate(f: CampuriProfil): Array<[number, number]> | null {
+  const R = f.diametru / 2;
+  if (!finit(R) || !(R > 0)) return null;
+  const linii = f.fel === 'desenata'
+    ? (Array.isArray(f.puncte) ? f.puncte.map(([r, h]): [number, number] => [r, h]) : null)
+    : liniiSilueta(f);
+  if (!linii || linii.length < 2) return null;
+  const rot = puncteRotunjite(linii);
+  const rez: Array<[number, number]> = [[0, 0]];
+  for (let i = 1; i < rot.length; i++) {
+    const [r, h] = rot[i]!;
+    if (!finit(r) || !finit(h)) return null;
+    const ultim = i === rot.length - 1;
+    while (ultim && rez.length > 1 && rez[rez.length - 1]![0] >= R) rez.pop();
+    const [rl, hl] = rez[rez.length - 1]!;
+    if (!ultim && !(r > rl)) continue;
+    rez.push([ultim ? R : r, Math.max(h, hl)]);
+  }
+  return rez.length >= 2 && rez.length <= PUNCTE_MAXIM ? rez : null;
 }

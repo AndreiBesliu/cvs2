@@ -26,6 +26,7 @@ export function numePropus(f: Pick<Freza, 'fel' | 'diametru' | 'unghi' | 'varf' 
     case 'rotunjire': return t('freze.propus.rotunjire', { r: n(f.raza), d: n(f.diametru) });
     case 'ogee': return t('freze.propus.ogee', { r: n(f.raza), d: n(f.diametru) });
     case 'ogee-roman': return t('freze.propus.ogee-roman', { r: n(f.raza), d: n(f.diametru) });
+    case 'desenata': return t('freze.propus.desenata', { d: n(f.diametru) });
     case 'panou': return f.raza === undefined
       ? t('freze.propus.panou', { u: n(f.unghi), d: n(f.diametru) })
       : t('freze.propus.panou.raza', { u: n(f.unghi), r: n(f.raza), d: n(f.diametru) });

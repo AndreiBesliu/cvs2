@@ -2,7 +2,9 @@
  * Fișierul bibliotecii de freze (ADR 0300 §8, felia 16.A↑a). „Exportă…” scrie JSON-ul propriu
  * (`{ format: 'cncvs2-freze', v: 1, freze: [...] }`), fără id, versiune și dată (le primește fiecare bibliotecă la import),
  * cu câmpurile necunoscute ale frezelor. „Importă…” citește același JSON sau un CSV cu coloanele din manual (`COLOANE_CSV`):
- * `nume`, `fel` și `diametru` sunt necesare, celelalte au valori implicite. Separatorul se găsește singur (`;`, `,`, tab);
+ * `nume`, `fel` și `diametru` sunt necesare, celelalte au valori implicite. Silueta desenată (16.A↑f-5) își are punctele în
+ * coloana `puncte` („0 0 | 2 0 | 3 1,5 | 6 4”: perechile despărțite de „|”, r și h de spații), iar diametrul ei, lipsă, vine
+ * din ultimul punct. Separatorul se găsește singur (`;`, `,`, tab);
  * virgula zecimală merge doar când separatorul nu e virgula. Codarea: UTF-8, altfel Windows-1250 (cititorul plăcuțelor).
  * Pur: primește octeții, întoarce frezele bune și câte s-au sărit.
  */
@@ -13,7 +15,7 @@ export const FORMAT_FREZE = 'cncvs2-freze';
 export const VERSIUNE_FISIER_FREZE = 1;
 
 /** Coloanele CSV, în ordinea din manual. */
-export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta'] as const;
+export const COLOANE_CSV = ['nume', 'fel', 'diametru', 'unghi', 'varf', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pas_lateral', 'tais', 'taisuri', 'nota', 'grup', 'raza', 'treapta', 'puncte'] as const;
 type ColoanaCsv = (typeof COLOANE_CSV)[number];
 
 export type MotivFisierFreze = 'gol' | 'json' | 'format' | 'versiune' | 'coloane' | 'prea-mare' | 'prea-multe';
@@ -65,6 +67,7 @@ const FELURI: Readonly<Record<string, FelFreza>> = {
   conica: 'conica', 'conică': 'conica', tapered: 'conica', burghiu: 'burghiu', drill: 'burghiu',
   rotunjire: 'rotunjire', roundover: 'rotunjire', ogee: 'ogee', 'ogee-roman': 'ogee-roman', 'ogee roman': 'ogee-roman',
   'roman ogee': 'ogee-roman', panou: 'panou', 'panou ridicat': 'panou', 'raised panel': 'panou',
+  desenata: 'desenata', 'desenată': 'desenata', 'profil desenat': 'desenata', drawn: 'desenata', 'drawn profile': 'desenata',
 };
 
 /** Un număr dintr-o celulă; cu `virgula`, și „3,175”. Gol: `undefined`; altceva decât un număr zecimal: NaN. */
@@ -73,6 +76,19 @@ function numar(celula: string | undefined, virgula: boolean): number | undefined
   if (c === '') return undefined;
   const t = virgula ? c.replace(',', '.') : c;
   return /^[+-]?\d+(?:\.\d+)?$/u.test(t) ? Number(t) : Number.NaN;
+}
+
+/**
+ * Punctele unei siluete desenate dintr-o celulă: perechi despărțite de „|”, fiecare cu r și h despărțite de spații. Goală:
+ * `undefined`; o pereche greșită dă un punct NaN (îl spune judecata frezei).
+ */
+function puncte(celula: string | undefined, virgula: boolean): Array<[number, number]> | undefined {
+  const c = (celula ?? '').trim();
+  if (c === '') return undefined;
+  return c.split('|').map((p): [number, number] => {
+    const n = p.trim().split(/\s+/u);
+    return n.length === 2 ? [numar(n[0], virgula) ?? Number.NaN, numar(n[1], virgula) ?? Number.NaN] : [Number.NaN, Number.NaN];
+  });
 }
 
 function dinCsv(text: string): CitireFreze {
@@ -94,7 +110,9 @@ function dinCsv(text: string): CitireFreze {
     const cel = (c: ColoanaCsv): string | undefined => { const i = loc.get(c); return i === undefined ? undefined : r[i]; };
     const nr = (c: ColoanaCsv): number | undefined => numar(cel(c), virgula);
     const fel = FELURI[(cel('fel') ?? '').trim().toLocaleLowerCase('ro')];
-    const diametru = nr('diametru');
+    const pct = fel === 'desenata' ? puncte(cel('puncte'), virgula) : undefined;
+    // Diametrul siluetei desenate, nescris, e de două ori raza ultimului ei punct.
+    const diametru = nr('diametru') ?? (pct ? 2 * pct[pct.length - 1]![0] : undefined);
     if (!fel || diametru === undefined) { sarite++; continue; }
     const nota = (cel('nota') ?? '').trim();
     const grup = (cel('grup') ?? '').trim();
@@ -105,7 +123,7 @@ function dinCsv(text: string): CitireFreze {
       turatie: nr('turatie') ?? 18000, avans: nr('avans') ?? 1000, plonjare: nr('plonjare') ?? 300,
       pas: nr('pas') ?? (fel === 'plata' ? diametru / 2 : 1),
       pasLateral: nr('pas_lateral') ?? 40,
-      tais: nr('tais'), taisuri: nr('taisuri'),
+      tais: nr('tais'), taisuri: nr('taisuri'), puncte: pct,
       ...(nota === '' ? {} : { nota }),
       ...(grup === '' ? {} : { grup }),
     };
