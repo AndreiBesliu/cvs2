@@ -78,3 +78,24 @@ test('cu cea mai joasă celulă un ac în care bila nu intră, marginea de jos n
   assert.ok(bun.f.ok, bun.f.ok ? '' : bun.f.motiv);
   assert.equal(bun.f.treceri, 97);
 });
+
+test('pe un șanț în V (bila nu ajunge la fund), marginea de jos e tot strânsă: 97 de treceri ies, fără refuz', () => {
+  // Șanțul de-a lungul lui X, la mijloc: −10 pe rândul de jos, cu pereții de 3 mm pe mm; bila Ø3 stă pe pereți, nu pe fund.
+  // Fundul pe centrul rândului 80 (y = 40,25), deci modelul, liniar între centre, e chiar V-ul.
+  const z = grila(N, N, C, (_x, y) => Math.min(-0.3, -10 + 3 * Math.abs(y - 40.25)));
+  const o = (pas: number): ParametriFinisare => ({
+    reliefuri: [relief(z, N, N, C, T(0, 0), 0)], unghi: 0, nealiniat: false, margine: 'perete', pas, adancime: 12, zSigur: 5,
+    avans: 1000, avansPlonjare: 300, pasLateral: 0.5, freza: { fel: 'bila', raza: 1.5 },
+  });
+  // Cea mai adâncă cotă, din programul dintr-o trecere (ultima trecere e pe model).
+  const unu = finisareRelief(o(20));
+  assert.ok(unu.ok, unu.ok ? '' : unu.motiv);
+  let adanc = 0;
+  if (unu.ok) for (const m of unu.miscari) if (m.tip === 'taiere' && m.la.Z !== undefined && m.la.Z < adanc) adanc = m.la.Z;
+  // Bila stă pe pereți, mult deasupra fundului: pe hârtie, CL-ul exact e −10 + max(3d − R + √(R² − d²)) = −10 + 3,243 =
+  // −6,757 (la d = 1,423); câmpul conservativ îl ridică cu cel mult ~2 · h · panta = 2 · 0,0625 · 3 = 0,375.
+  assert.ok(adanc >= -6.758 && adanc < -6.757 + 0.375, `cea mai adâncă cotă: ${adanc}`);
+  const bun = finisareRelief(o(-adanc / 96.5));
+  assert.ok(bun.ok, bun.ok ? '' : bun.motiv);
+  assert.equal(bun.treceri, 97);
+});
