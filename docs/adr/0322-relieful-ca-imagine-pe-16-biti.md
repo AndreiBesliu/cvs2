@@ -75,3 +75,32 @@ La alegerea 1 (recomandarea aplicată), peste cititorul TIFF al trasării (ADR 0
 7. **Unde se decodează:** în workerul reliefului, +6,0 kB (recomandat: aceeași cale ca PNG-ul, fără pixelii trecuți între
    workere). Alternativa: workerul trasării decodează și dă pixelii reliefului (~+1 kB, dar pixelii, Float64 RGBA, de două ori
    în memorie pe drum).
+
+## Implementarea 18.1↑g-3 (28.11): simularea salvată ca strat
+
+La alegerea 4 (recomandarea aplicată):
+
+1. **Din panou:** în secțiunea Relieful, **Strat din simulare** simulează programul foii active (ca vederea 3D, „Tăiat”:
+   `programSimulare`, apoi `simuleazaRelief`) pe fereastra reliefului: cutia lui pe foaie, tăiată la foaie, la celula lui pe foaie
+   (cel puțin 0,05 mm), cu colțul ferestrei în colțul cutiei, deci la un relief drept centrele pixelilor cad pe centrele celulelor.
+2. **Pe grila reliefului:** în workerul reliefului (cererea `din-simulare`), fiecare celulă ia pixelul simulării în care cade
+   centrul ei, dus pe foaie prin matricea reliefului (`valoriDinSimulare`, `src/relief/dinSimulare.ts`, pur); în afara ferestrei,
+   gol. Z-ul e al reliefului: z = z_simulat − dz, cu dz ca la lucrare (−planZero al finisării sau al degroșării care taie relieful;
+   fără, −vârful compusului straturilor vizibile; `dzRelief`). Simularea pe blocuri (un relief prea mare) dă cel mai jos punct pe
+   bloc, deci stratul nu iese niciodată peste tăietură.
+3. **Stratul:** nou, deasupra, **ascuns**, **„înlocuiește”**, numit „Tăietura simulată” (în limba de atunci): ce se taie nu se
+   schimbă; arătat, relieful arată ce rămâne după tăiere. Fără operații pe foaie, lucrarea refuză (nimic de tăiat), iar refuzul
+   se spune. Un relief schimbat cât se simula nu e suprascris („apasă din nou”).
+
+**Mărimea:** pornirea +0, totalul +1,9 kB (961,3 / 1 000).
+
+**Alegerile owner-ului (cu recomandarea aplicată):**
+
+8. **Unde merge tăietura:** un strat nou, ascuns, al reliefului ales (recomandat: lângă model, comparată cu ochiul). Alternativa:
+   o piesă-relief nouă, lângă cea tăiată.
+9. **Modul stratului:** „înlocuiește” (recomandat: arătat, e chiar tăietura). Alternativa: „adună”, cu diferența tăietură − model
+   (arată doar ce a rămas).
+10. **De unde se pornește:** din panou, pe relieful ales (recomandat: panoul știe care relief). Alternativa: din vederea 3D,
+    „Tăiat”, cu alegerea reliefului acolo.
+11. **Rezoluția:** celula reliefului, pe centrele celulelor (recomandat). Alternativa: fereastra fină de 0,1 mm a vederii 3D,
+    redusă apoi pe grila reliefului.

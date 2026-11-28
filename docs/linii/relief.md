@@ -354,3 +354,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     `tiff.ts` cu `ccitt.ts`, 6 kB gzip), chiar dacă alt worker îl are deja.
   - **Decodarea exactă a TIFF-ului e o ramură a aceleiași funcții (`pagina`, cu `exact`), nu o copie:** decodarea benzilor,
     predictorul și compresiile rămân comune; doar culoarea și ținerea pixelilor diferă, iar probele trasării apără ramura veche.
+- **28.11: 18.1↑g-3 gata pe ramură** (simularea salvată ca strat, ADR 0322 §5.4): „Strat din simulare” pune tăietura simulată ca
+  strat nou, ascuns, „înlocuiește”, pe grila reliefului, în Z-ul lui (alegerile 8–11, cu recomandarea aplicată). Totalul +1,9 kB
+  (961,3 / 1 000). Cu ea, ADR 0322 e întreg; din rândurile ADR 0310 §8 rămân doar 18.1↑f-2 (după plăcuța owner-ului) și
+  întrebarea 6 din ADR 0323 (mișcările ținute compact), a owner-ului.
+  - **Un punct al grilei ia pixelul simulării după centrul celulei:** o probă cu relieful aliniat pe pixeli nu deosebește centrul
+    de colț (otrava S02); proba lui are relieful decalat cu un sfert de pixel.
+  - **Modelul reliefului e interpolat între centrele celulelor:** un perete „vertical” dintr-o imagine e o pantă de o celulă, deci
+    ce lasă o bilă lângă el iese ceva mai mult decât pe hârtie, cu peretele drept; proba e2e cere doar marginea de jos.
