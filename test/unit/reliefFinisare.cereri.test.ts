@@ -1,5 +1,5 @@
 /**
- * Loturile de linii ca cereri de sine stătătoare (ADR 0323, planul liniilor pe workere; felia 18.1↑h-7a). Un worker al cotelor
+ * Loturile de linii ca cereri de sine stătătoare (ADR 0323, planul liniilor pe workere; felia 18.1↑h-7). Un worker al cotelor
  * nu vede documentul: primește doar cererea lotului (punctele liniilor lui, în lume, și, pe fiecare relief, rândurile de
  * relief de care are nevoie banda lui, tăiate din tablou, cu decalajul lor) și întoarce cotele. Cererile trec granița firelor
  * (aici, `structuredClone`); programul făcut apoi din cotele lor, date finisării (`cote`), trebuie să fie cel de azi, octet cu

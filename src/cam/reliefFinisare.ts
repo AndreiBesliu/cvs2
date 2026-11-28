@@ -43,7 +43,7 @@ export type FrezaFinisare =
  */
 export type ReliefCam = {
   readonly nx: number; readonly ny: number; readonly celula: number;
-  /** Cotele, rând cu rând; cu `zRand0`, doar rândurile de la el încolo (o bandă trimisă unui worker, felia 18.1↑h-7a). */
+  /** Cotele, rând cu rând; cu `zRand0`, doar rândurile de la el încolo (o bandă trimisă unui worker, felia 18.1↑h-7). */
   readonly z: ArrayLike<number>;
   readonly zRand0?: number;
   readonly m: { readonly a: number; readonly b: number; readonly c: number; readonly d: number; readonly e: number; readonly f: number };
@@ -65,7 +65,7 @@ export type ParametriFinisare = {
   readonly avans: number;
   readonly avansPlonjare: number;
   /**
-   * Cotele tuturor liniilor, în ordinea planului, făcute dinainte (de bazinul cotelor, pe loturi, felia 18.1↑h-7): cu ele,
+   * Cotele tuturor liniilor, în ordinea planului, făcute dinainte (de bazinul cotelor, pe loturi, felia 18.1↑h-8): cu ele,
    * liniile nu se mai socotesc aici. Altele decât ale planului (alt număr de linii sau de puncte), se socotesc din nou.
    */
   readonly cote?: readonly Float64Array[];
@@ -667,7 +667,7 @@ function coteLinii(xy: readonly { readonly x: Float64Array; readonly y: Float64A
 }
 
 /**
- * Cererea unui lot de linii pentru un worker al cotelor (felia 18.1↑h-7a), de sine stătătoare: punctele liniilor lotului, în
+ * Cererea unui lot de linii pentru un worker al cotelor (felia 18.1↑h-7), de sine stătătoare: punctele liniilor lotului, în
  * lume și în ordinea parcurgerii, iar pe fiecare relief doar rândurile de relief de care are nevoie banda lui (cu `zRand0`) și
  * banda însăși (rândurile de calcul). Plus ce ține de cotă: freza ei, ridicarea, podeaua, marginea.
  */
@@ -723,7 +723,7 @@ export function cotePuncte(c: CerereCote): Float64Array[] {
   return coteLinii(c.x.map((x, q) => ({ x, y: c.y[q]! })), c.ip, cotaPe(pregatite, c, c));
 }
 
-/** Planul unei finisări (pentru probe și pentru bazinul cotelor, felia 18.1↑h-7), sau refuzul. */
+/** Planul unei finisări (pentru probe și pentru bazinul cotelor, felia 18.1↑h-8), sau refuzul. */
 export function planFinisare(o: ParametriFinisare): ReturnType<typeof planTreceri> {
   return planTreceri(o, { cota: o.freza, ridicare: 0, degrosare: false });
 }

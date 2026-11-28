@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 18.1↑h-7a (loturile ca cereri de sine stătătoare și finisarea din cote date; ADR 0323), 28.11.2026,
+# Lista de otrăvuri a feliei 18.1↑h-7 (loturile ca cereri de sine stătătoare și finisarea din cote date; ADR 0323), 28.11.2026,
 # alese de autor: decalajul rândurilor de relief ale unei benzi (în modelul exact și în câmpul pe 9 puncte), rândurile tăiate
 # pentru un lot, banda dată câmpului în worker, granița ultimului lot și verificarea cotelor date (`src/cam/reliefFinisare.ts`),
 # prinse de `reliefFinisare.cereri.test.ts`. Plus un martor.

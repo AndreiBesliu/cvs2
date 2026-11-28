@@ -162,7 +162,7 @@ punctelor (20 M) le ține sub ce cade o filă.
   pe mișcare, deci de ~5 ori mai puțin; programul scris, același, octet cu octet; plafonul punctelor urcă după ea.
 - b) Plafonul rămâne 20 M, iar mișcările, obiecte (azi).
 
-## Planul liniilor pe workere (feliile 18.1↑h-6, 18.1↑h-7)
+## Planul liniilor pe workere (feliile 18.1↑h-6 … 18.1↑h-8)
 
 Tiparul e al bazinului simulării (ADR 0047 §4, `src/jobs/bazin.ts`): N workere fără stare (cel mult 8, după nuclee), oprite la
 capătul jobului; în Node, loturile rulează pe rând, prin aceeași funcție. Cotele se calculează înaintea programului, care rămâne
@@ -172,7 +172,7 @@ sincron (exportul, traseul, simularea, potrivirea îl construiesc la fel).
   trecerilor, fără câmpul întreg), **cotele unui lot de linii** (cu câmpul doar pe banda de rânduri de care are nevoie lotul, pe
   fiecare relief) și **mișcările** (din cote). Proba: loturile lipite dau cotele dintr-o bucată, bit cu bit, oricum ar fi
   împărțite liniile; programele, octet cu octet.
-- **18.1↑h-7 (bazinul):** workerul CAM face planul și împarte liniile în loturi; fiecare lot pleacă la un worker al cotelor cu
+- **18.1↑h-7 (loturile ca cereri de sine stătătoare) și 18.1↑h-8 (bazinul):** workerul CAM face planul și împarte liniile în loturi; fiecare lot pleacă la un worker al cotelor cu
   banda lui de relief (tablouri transferate), iar cotele se întorc tot transferate. Un calcul de relief mare are deci N workere,
   nu unul (o completare a ADR 0109, „un worker pe calcul”). Pentru liniile la 0° și 90°, banda unui lot e îngustă (memoria
   câmpului se împarte la N); la un unghi oarecare, un lot de linii întregi are nevoie de aproape tot relieful, deci acolo
@@ -193,4 +193,19 @@ le înșiră pe câmpul întreg, ca înainte: programele, octet cu octet (ampren
   (bila nu ajunge la fund): marginea de jos rămâne strânsă, deci 97 de treceri ies.
 - **Găsit la scriere:** banda lotului după raza frezei, nu a cotei (la degroșare, cu adaos, cotele ieșeau prea jos pe marginea
   benzii); reparat înaintea primului commit și pus ca otrava M01. **Otrăvurile:** `18.1h6.py`, 6 / 6.
+
+## Implementarea 18.1↑h-7 (loturile ca cereri de sine stătătoare)
+
+`loturiCote(plan, k)` împarte liniile fiecărui relief în cel mult k loturi cu cam aceleași puncte și face din fiecare o cerere
+de sine stătătoare (`CerereCote`): punctele liniilor, în lume și în ordinea parcurgerii; pe fiecare relief, doar rândurile de
+relief de care au nevoie nodurile benzii lui (tăiate din tablou, cu decalajul lor, `ReliefCam.zRand0`) și banda însăși; freza
+cotei, ridicarea, podeaua, marginea. `cotePuncte(cerere)` e ce face un worker: cotele lotului. `ParametriFinisare.cote` (și la
+degroșare) primește cotele tuturor liniilor, în ordinea planului, și le folosește doar dacă sunt ale planului (același număr de
+linii și de puncte); altfel le socotește din nou. Modelul exact și câmpul citesc o bandă cu rândul global minus începutul ei.
+
+- **Proba:** `test/unit/reliefFinisare.cereri.test.ts`: finisarea (un relief și două, rotite; patru unghiuri; toate frezele) și
+  degroșarea (adaosul 0, 0,5, 2) din cotele a 1, 2, 3 și 7 loturi, trecute prin `structuredClone`, = cele de azi, octet cu octet;
+  și la celula de 0,05 mm (câmpul pe 9 puncte); cotele date chiar se folosesc (altele dau alt program), iar cele care nu sunt ale
+  planului se socotesc din nou; la 0°, rândurile trimise unui lot sunt cât banda lui (sub 90 din 400); workerul nu citește
+  niciodată în afara rândurilor primite (o citire urmărită, pe fiecare index). **Otrăvurile:** `18.1h7.py`, 7 / 7.
 

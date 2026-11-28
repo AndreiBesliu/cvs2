@@ -17407,3 +17407,12 @@ owner-ului); ordinul „unește ce se poate”
   **Otrăvurile:** `18.1h6.py`, 6 / 6.
 - **ADR 0323:** planul liniilor pe workere (18.1↑h-6, 18.1↑h-7) și implementarea lui 18.1↑h-6.
 
+## 2026-11-28 — 18.1↑h-7: loturile de linii ca cereri de sine stătătoare (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a (liniile pe workere). **Started:** 28.11, 12:03, pe `wip/18.1-relief`, după 18.1↑h-6.
+**Completed:** 28.11, 12:13.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): `loturiCote`, `cotePuncte`, `CerereCote`; `ReliefCam.zRand0` (o bandă de rânduri);
+  `ParametriFinisare.cote` (și la degroșare). Programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.cereri.test.ts` (6). **Otrăvurile:** `18.1h7.py`, 7 / 7.
+
