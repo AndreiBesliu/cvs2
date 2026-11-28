@@ -101,6 +101,8 @@ test('seturile pe material: un set nou pornește de la valorile frezei; greșeli
   await set(g, 0).locator('[data-freze="set-scoate"]').click();
   await expect(g.locator('[data-freze="set-adauga"]')).toBeFocused();
   await g.locator('[data-freze="salveaza"]').click();
+  // Întâi fișa, apoi lipsa tabelului: altfel „niciun tabel” trece și înainte să apară fișa (otrava G27 scăpa așa).
+  await expect(fisa(g).locator('[data-freze-valoare="turatie"]')).toBeVisible();
   await expect(fisa(g).locator('[data-freze="fisa-materiale"]')).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
@@ -109,6 +111,7 @@ test('cel mult 16 seturi: „Un set pe material” se oprește la al 16-lea; o f
   await page.goto('/');
   const f = await deschideFrezele(page);
   await f.locator('.freze-rand-nume').first().click();
+  await expect(fisa(f).locator('[data-freze-valoare="turatie"]')).toBeVisible();
   await expect(fisa(f).locator('[data-freze="fisa-materiale"]')).toHaveCount(0);
   await fisa(f).locator('[data-freze="editeaza"]').click();
   for (let i = 0; i < 16; i++) await f.locator('[data-freze="set-adauga"]').click();
