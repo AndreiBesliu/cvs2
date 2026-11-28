@@ -1475,6 +1475,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ca la ventilator; „Fă elicea cu duza”. Cu ea, ADR 0340 are toate feliile. Easy 3Draw 18.50.0 (următoarea, 18.51.0). **O probă e2e care cere textul tipăririi îi ia
   cifrele din motor pentru starea exactă a editorului din probă. Un paragraf umplut după construire nu stă în editor deasupra
   unor butoane (apare după 90 ms și le mută: un clic se pierde sub încărcare).** La owner: verdictul a / b / c (fișa etapei 3).
+  **3.Cn (ventilatorul în „Modelul”; ADR 0341, aleasă de linie pe 28.11, cu recomandările aplicate)** gata pe 28.11: a cincea
+  construcție gata, „Ventilator” (`constructieGata("ventilator")`: grinda de 2k + 1, știfturile în prima și în ultima gaură,
+  carcasa pe ele, axul prin mijloc, bucșa și rotorul pe ax, la cotele trusei), și „Fă-l în model” în editorul ventilatorului, cu
+  toate valorile lui. Nicio piesă schimbată. Easy 3Draw 18.51.0 (următoarea, 18.52.0). **Un șablon care pune o piesă pe
+  prinderea alteia o caută după geometria plasei (`corp.ax`, prinderile), nu după originea locală.**
   **Cotele pe desen: modelul și proba G-code-ului (ADR 0330, felia 10.4↑a-1, adusă din etapa 10)** gata pe 24.11, în
   sesiunea cloud a liniei (ramura `wip/10.4-cote`), unită în `main` pe 24.11 (`f25249cf`), fără interfață încă. ADR
   0330, acceptat de owner cu 1a–6a și cu nota lui: toate setările cotelor stau într-o fereastră nouă, „Setări”, nu în

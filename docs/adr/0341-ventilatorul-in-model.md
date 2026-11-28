@@ -48,3 +48,22 @@ prindere în prindere, verificate (3.Cg).
 
 Nu schimbă nicio piesă (amprentele plaselor rămân), nici lista de printat a lui „Fă ventilatorul” (bifa „Și trusa”
 rămâne cum e). Nimic în aplicație, nimic pe server: doar pachetul extensiei (Easy 3Draw 18.51.0).
+
+## Implementarea (3.Cn, 28.11)
+
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`): al cincilea șablon din `SABLOANE`, `constructieGata("ventilator")`. Grinda
+  groasă de 2k + 1 găuri pe grilă; câte un știft Technic (cu fantă, lung de 2) în gaura 0 și în gaura 2k, prins de sus; carcasa
+  pe știftul din stânga, prinsă cu urechea ei de pe −x (căutată după axa plasei, `corp.ax`, nu după originea locală), deci cu
+  cealaltă ureche pe al doilea știft; axul cel mai scurt al trusei, prins de jos în gaura din mijloc; jumătatea de bucșă și
+  rotorul alunecate pe ax (`alunec`) până la cotele trusei (`ventilatorTrusa`: fața de sus a grinzii, apoi bucșa, apoi `jos`
+  și butucul). Știftul Technic iese 0,1 mm sub grindă, deci baza se ridică singură cu o placă (3,2 mm).
+- **Valorile duse în margini se spun:** diametrul și paletele prin `ventilatorCote` (cu mesajele lui); gaura rotorului trebuie să
+  meargă pe ax (de ax sau rotundă), iar alta devine de ax, cu mesaj.
+- **Atelierul** (`planificator/atelier.ts`): „Ventilator” în „Construcții gata”, cu diametrul (24–120), paletele (3–12) și
+  urechile (2 sau 4), și textul „Grinda are … găuri, axul … știfturi”; în editorul ventilatorului, sub „Fă ventilatorul”, rândul
+  „Fă-l în model”: duce în șablon toate valorile editorului (diametrul, paletele, jocul, pasul, lățimea, sensul, gaura, inelul,
+  urechile), face construcția nouă și trece în „Modelul”.
+- **Probele**, scrise întâi: `test/unit/trenulet.sabloane.ventilator.test.ts` (5 teste: implicitul, Ø48 cu 4 urechi, valorile
+  editorului pe piese, marginile și mesajele, controlul negativ cu o carcasă prea îngustă), `test/e2e/trenulet.sabloane.spec.ts`
+  (panoul și butonul din editor), engleza în `test/e2e/trenulet.spec.ts`. Otrăvurile: `test/otravuri/3.Cn.py`.
+- Nicio piesă schimbată; lista de printat a lui „Fă ventilatorul”, neschimbată. Easy 3Draw 18.51.0.

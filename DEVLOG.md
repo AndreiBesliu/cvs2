@@ -17254,3 +17254,21 @@ principală: auditul elicelor, felia 7, răspunsul 4a)
 - **Înainte:** nota liniei frezelor (`5335aca0`) unită în `afce2d48`; PR-ul #79, închis ca unit.
 - **Pe test:** lotul 69, după completul de pe `main`.
 - **Documentele:** decizia în `CLAUDE.md`; starea din `docs/linii/principala.md`.
+
+## 2026-11-28 — Felia 3.Cn: ventilatorul în „Modelul” (ADR 0341) (sesiune cloud)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis de sesiunea principală: linia își
+alege felia din nota ei, cu recomandarea, și scrie întâi un ADR scurt dacă e o direcție nouă)
+**Started:** 28.11, 07:42. **Completed:** 28.11, @@FINAL@@ (orele, după ceasul containerului).
+
+- **De ce 3.Cn:** ventilatorul în model era cerut de două ori (auditul elicelor, constatarea 4; nota deschisă din ADR 0283), fără
+  server, numai din ce e gata (trusa din 3.Cm-3, alipirea, verificarea, construcțiile gata). ADR 0341, cu trei alegeri și
+  recomandările aplicate.
+- **Motorul:** al cincilea șablon, `constructieGata("ventilator")`: grinda de 2k + 1, știfturile în prima și în ultima gaură,
+  carcasa pe ele, axul prin mijloc, bucșa și rotorul alunecate pe ax, la cotele trusei; valorile duse în margini, cu mesaj.
+- **Atelierul:** „Ventilator” în „Construcții gata” (diametrul, paletele, urechile); „Fă-l în model” în editorul ventilatorului,
+  cu toate valorile lui.
+- **Probele**, scrise întâi: `trenulet.sabloane.ventilator.test.ts` (5 teste pe plasele reale, cu control negativ),
+  `trenulet.sabloane.spec.ts` (panoul și butonul), engleza în `trenulet.spec.ts`.
+- **Otrăvurile:** `3.Cn.py`, @@OTRAVURI@@.
+- **Mărimea:** Easy 3Draw 18.51.0; aplicația, neschimbată. Nimic pe server; nicio piesă schimbată.
