@@ -9,7 +9,10 @@ import { razaColtului } from '../model/creasta.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { degrosariFoaie, finisariFoaie, finisariInainteaDegrosarii, nepotrivireDegrosare, ordinePasi, type FinisareFoaie } from '../model/finisare.ts';
 import { compusDinResurse, type ResurseRelief } from '../relief/resurse.ts';
-import { degrosareRelief, finisareRelief, type FrezaFinisare, type ReliefCam } from './reliefFinisare.ts';
+import {
+  degrosareRelief, finisareRelief, planDegrosare, planFinisare,
+  type FrezaFinisare, type ParametriDegrosare, type ParametriFinisare, type PlanTreceri, type ReliefCam,
+} from './reliefFinisare.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
@@ -153,13 +156,15 @@ function refuzFinisareSiBila(doc: Document): string | null {
 }
 
 /**
- * O operație a reliefului de pe foaie (ADR 0310 §4–§6; finisarea, ADR 0312; degroșarea, ADR 0313): compusul fiecărui relief
- * din resurse (dalele lui, aduse de firul principal), mutat pe Z (planul zero sub față, sau vârful compusului la față), în
- * lume, cu celula scalată; apoi `finisareRelief` sau `degrosareRelief`.
+ * Parametrii unei operații a reliefului de pe foaie (ADR 0310 §4–§6; finisarea, ADR 0312; degroșarea, ADR 0313; felia
+ * 18.1↑h-8), ca pentru `finisareRelief` / `degrosareRelief`, sau refuzul.
  */
-function programRelief(
-  f: FinisareFoaie, resurse: ResurseRelief | undefined, regim: Regim,
-): ReturnType<typeof finisareRelief> {
+type ParametriRelief =
+  | { readonly ok: false; readonly motiv: string }
+  | { readonly ok: true; readonly fel: 'degrosare'; readonly p: ParametriDegrosare }
+  | { readonly ok: true; readonly fel: 'finisare'; readonly p: ParametriFinisare };
+
+function parametriRelief(f: FinisareFoaie, resurse: ResurseRelief | undefined, regim: Regim): ParametriRelief {
   const o = f.operatie, fin = o.tip === 'degrosare' ? o.degrosare : o.finisare;
   const felul = o.tip === 'degrosare' ? 'degroșarea' : 'finisarea';
   if (!fin) return { ok: false, motiv: `${f.piesa}/${o.id}: ${felul} n-are valorile ei` };
@@ -189,15 +194,51 @@ function programRelief(
   };
   if (o.tip === 'degrosare') {
     // Freza plată (judecată de `refuzFinisareSiBila`, prin `motivFormaPeOperatie`); adaosul, din document.
-    const r = degrosareRelief({ ...comune, raza: D / 2, adaos: o.degrosare?.adaos ?? 0 });
-    return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
+    return { ok: true, fel: 'degrosare', p: { ...comune, raza: D / 2, adaos: o.degrosare?.adaos ?? 0 } };
   }
   const freza: FrezaFinisare = fs?.tip === 'bila' ? { fel: 'bila', raza: D / 2 }
     : fs?.tip === 'v' ? { fel: 'v', raza: D / 2, unghi: fs.unghi, varf: fs.varf ?? 0 }
       : fs?.tip === 'toroidala' ? { fel: 'toroidala', raza: D / 2, colt: fs.raza } : { fel: 'plata', raza: D / 2 };
-  const r = finisareRelief({ ...comune, freza, nealiniat: o.finisare?.nealiniat === true });
-  return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${o.id}`}: ${r.motiv}` };
+  return { ok: true, fel: 'finisare', p: { ...comune, freza, nealiniat: o.finisare?.nealiniat === true } };
 }
+
+/** Cheia operației `f` a reliefului: cotele ei, făcute dinainte de bazin, vin sub cheia aceasta. */
+export function cheieRelief(f: FinisareFoaie): string {
+  return `${f.instanta}/${f.piesa}/${f.operatie.id}`;
+}
+
+/** Cotele liniilor operațiilor reliefului, făcute dinainte (de bazinul cotelor, felia 18.1↑h-8), după cheia operației. */
+export type CoteRelief = ReadonlyMap<string, readonly Float64Array[]>;
+
+/**
+ * Programul operației `f` a reliefului: compusul fiecărui relief din resurse (dalele lui, aduse de firul principal), mutat pe
+ * Z (planul zero sub față, sau vârful compusului la față), în lume, cu celula scalată; apoi `finisareRelief` sau
+ * `degrosareRelief`, cu cotele date, dacă sunt.
+ */
+function programRelief(f: FinisareFoaie, resurse: ResurseRelief | undefined, regim: Regim, cote?: readonly Float64Array[]): ReturnType<typeof finisareRelief> {
+  const pr = parametriRelief(f, resurse, regim);
+  if (!pr.ok) return pr;
+  const cu = cote ? { cote } : {};
+  const r = pr.fel === 'degrosare' ? degrosareRelief({ ...pr.p, ...cu }) : finisareRelief({ ...pr.p, ...cu });
+  return r.ok ? r : { ok: false, motiv: `${f.reliefuri[0]?.idLume ?? `${f.piesa}/${f.operatie.id}`}: ${r.motiv}` };
+}
+
+/**
+ * Planurile operațiilor reliefului de pe foaie (felia 18.1↑h-8), după cheie: din ele, bazinul cotelor face loturile. O
+ * operație refuzată nu are plan (programul o refuză la fel, fără cote).
+ */
+export function planuriRelief(doc: Document, resurse: ResurseRelief | undefined): { readonly cheie: string; readonly plan: PlanTreceri }[] {
+  const out: { cheie: string; plan: PlanTreceri }[] = [];
+  for (const f of [...degrosariFoaie(doc, 0), ...finisariFoaie(doc, 0)]) {
+    const pr = parametriRelief(f, resurse, REGIM_IMPLICIT);
+    if (!pr.ok) continue;
+    const pl = pr.fel === 'degrosare' ? planDegrosare(pr.p) : planFinisare(pr.p);
+    if (pl.ok) out.push({ cheie: cheieRelief(f), plan: pl.plan });
+  }
+  return out;
+}
+
+
 
 /** Ultima poziție în plan a frezei, din mișcările de până acum; null înainte de prima. */
 function ultimaPozitie(miscari: readonly Miscare[]): { readonly x: number; readonly y: number } | null {
@@ -413,6 +454,7 @@ function avertismentLaturi(regula: 'lungi' | 'scurte', putine: readonly BuclaPut
  */
 export function programDinDocument(
   doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false, lemn?: FundLemn | 'fara', reliefuri?: ResurseRelief,
+  cote?: CoteRelief,
 ): RezultatJob {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
@@ -686,7 +728,7 @@ export function programDinDocument(
   /** Operațiile reliefului de dinaintea tăieturii k (ADR 0312 §7, ADR 0313); refuzul primei care nu iese. */
   const faFinisari = (k: number): string | null => {
     for (const f of finisariLa.get(k) ?? []) {
-      const r = programRelief(f, reliefuri, regim);
+      const r = programRelief(f, reliefuri, regim, cote?.get(cheieRelief(f)));
       if (!r.ok) return r.motiv;
       monteaza(f.operatie.scula);
       const id = f.reliefuri[0]?.idLume ?? `${f.instanta}/${f.operatie.id}`;

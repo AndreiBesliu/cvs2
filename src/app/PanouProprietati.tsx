@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
@@ -108,6 +108,9 @@ type Props = {
   readonly trimite?: RezultatActiune;
   readonly onTrimite?: () => void;
 };
+
+/** Stările simulării salvate ca strat (ADR 0322 §5.4): la lucru, gata, sau de ce nu (cu textul ei, `prop.relief.simulare.*`). */
+type StareSim = 'lucru' | 'ok' | 'lipsa' | 'plin' | 'afara' | 'refuz' | 'eroare' | 'schimbat';
 
 /** Piesele instanțelor alese de pe foaie, fiecare o dată, în ordinea foii. */
 function pieseAlese(doc: Document, alese: readonly string[], indexFoaie: number): Piesa[] {
@@ -241,6 +244,12 @@ export function PanouProprietati({
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
   const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  // Exportul reliefului ca PNG pe 16 biți (ADR 0322), pentru relieful de atunci.
+  const [png, setPng] = useState<{ readonly cheie: string; readonly stare: 'lucru' | 'ok' | 'lipsa' | 'eroare' } | null>(null);
+  /** Simularea salvată ca strat (ADR 0322 §5.4): starea, pe cheia reliefului; `motiv`, textul unui refuz al simulării. */
+  const [sim, setSim] = useState<{ readonly cheie: string; readonly stare: StareSim; readonly motiv?: string } | null>(null);
+  /** Forma de acum a fiecărui relief ales: o simulare terminată după o schimbare a reliefului nu scrie peste ea. */
+  const formeRelief = useRef(new Map<string, FormaRelief>());
   // Biblioteca de freze (ADR 0300 §4, felia 16.A↑b-2), pentru rândul „Freza” din Tăierea: a contului deschis, citită din
   // browser (fără sincronizare: aceea e a ferestrei „Frezele mele”), dacă are freze sau a primit setul standard; altfel cea
   // fără cont, care primește frezele standard o dată (ADR 0300 §3, precizarea din 24.11). Și refuzul ultimei freze alese,
@@ -257,6 +266,7 @@ export function PanouProprietati({
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
   // Câmpurile țin minte textul scris; la altă selecție pornesc de la zero.
   const cheie = alese.join(',');
+  formeRelief.current = new Map(piesa ? reliefuriNod(piesa.radacina).map((r) => [`${cheie}/${r.id}`, r.forma]) : []);
   const oprit = doarCitire ? t('motiv.doar-citire') : undefined;
   const camp = (eticheta: string, numeCamp: string, valoare: number | null, unitate: string, semn: boolean, onAplica: (x: number) => RezultatActiune): ReactNode => (
     <CampNumeric key={`${cheie}/${numeCamp}`} eticheta={eticheta} camp={numeCamp} valoare={valoare} unitate={unitate} semn={semn}
@@ -775,6 +785,42 @@ export function PanouProprietati({
             <p className="prop-grup">{t('prop.relief.straturi')}</p>
             <StraturiRelief cheie={`${cheie}/${id}`} forma={f} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})}
               onSchimba={onStraturi ? (nou) => onStraturi(nou, id) : undefined} />
+            {/* Relieful ca imagine pe 16 biți (ADR 0322): adus la primul clic; cu straturile lipsă din browser, oprit. */}
+            <button type="button" data-buton="relief-png" disabled={!d || (png?.cheie === `${cheie}/${id}` && png.stare === 'lucru')}
+              onClick={() => {
+                const k = `${cheie}/${id}`;
+                setPng({ cheie: k, stare: 'lucru' });
+                import('./reliefPng.ts').then((m) => m.exportaReliefPng(f, piesa.nume ?? id)).then((stare) => { setPng({ cheie: k, stare }); },
+                  () => { setPng({ cheie: k, stare: 'eroare' }); });
+              }}>
+              {t('prop.relief.png')}
+            </button>
+            {png?.cheie === `${cheie}/${id}` && png.stare !== 'ok' && (
+              <p className={png.stare === 'lucru' ? 'prop-nota-piesa' : 'camp-motiv'} role="status" data-testid="relief-png-stare">{t(`prop.relief.png.${png.stare}`)}</p>
+            )}
+            {/* Simularea salvată ca strat (ADR 0322 §5.4, felia 18.1↑g-3): un strat ascuns, „înlocuiește”, din tăietura simulată. */}
+            {onStraturi && instanta && (
+              <button type="button" data-buton="relief-din-simulare" disabled={doarCitire || !d || (sim?.cheie === `${cheie}/${id}` && sim.stare === 'lucru')}
+                {...(oprit ? { title: oprit } : {})}
+                onClick={() => {
+                  const k = `${cheie}/${id}`;
+                  setSim({ cheie: k, stare: 'lucru' });
+                  import('./reliefSimulare.ts').then((m) => m.stratDinSimulare(doc, foaie?.id, instanta.id, id, t('prop.relief.simulare.nume'))).then((r) => {
+                    if (!r.ok) { setSim({ cheie: k, stare: r.fel, ...(r.motiv !== undefined ? { motiv: r.motiv } : {}) }); return; }
+                    if (formeRelief.current.get(k) !== f) { setSim({ cheie: k, stare: 'schimbat' }); return; }
+                    const a = onStraturi(r.forma, id);
+                    setSim(a.ok ? { cheie: k, stare: 'ok' } : { cheie: k, stare: 'refuz', motiv: t(a.motiv) });
+                  }, () => { setSim({ cheie: k, stare: 'eroare' }); });
+                }}>
+                {t('prop.relief.simulare')}
+              </button>
+            )}
+            {sim?.cheie === `${cheie}/${id}` && (
+              <p className={sim.stare === 'lucru' || sim.stare === 'ok' ? 'prop-nota-piesa' : 'camp-motiv'} role="status" data-testid="relief-simulare-stare"
+                data-stare={sim.stare}>
+                {t(`prop.relief.simulare.${sim.stare}`, { motiv: sim.motiv ?? '?' })}
+              </p>
+            )}
             {d === null && <p className="camp-motiv" data-testid="prop-relief-lipsa">{t('prop.relief.lipsa')}</p>}
           </section>
         );

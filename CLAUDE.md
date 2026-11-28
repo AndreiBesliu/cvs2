@@ -480,6 +480,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   de puncte, ținute la 0,0001 mm), editorul cu desenul la scară, punctele trase sau mutate cu săgețile, tabelul,
   „Pornește de la…” și greșeala pe punctul ei; diametrul îl dă ultimul punct; în proiect intră ca forma `profil` din f-1;
   CSV-ul are coloana `puncte`. Documentul rămâne v32; nimic pe server. Felia: pornirea +0, totalul +3,6 kB.
+  **Valorile frezei pe material și calculatorul avansului (ADR 0305, feliile 16.A↑g-1…g-3)** gata pe 28.11, unite în `main`
+  pe 28.11 (`47559857`): câmpul `materiale` al frezei din bibliotecă (cel mult 16 seturi, fiecare cu numele materialului și
+  cele cinci valori de lucru; valorile de azi rămân setul implicit, „Orice material”), cu editorul seturilor în „Frezele
+  mele”; un set se potrivește cu eticheta foii când toate cuvintele lui sunt în ea (fără majuscule și diacritice; cel mai
+  lung câștigă; `setPentru`, `valoriPeMaterial`); la alegerea unei freze în proiect (Tăierea, rândurile exportului, frezele
+  în plus, „Ia valorile noi”), copia primește setul foii active, iar rândul spune ce set s-a folosit; calculatorul din
+  editor scrie turația (din Vc) și avansul (din fz și tăișuri), fără să le țină. **Fără schemă nouă** (copia ține deja
+  valorile, `regim`, v27); documentul rămâne v32; nimic pe server; JSON-ul poartă seturile, CSV-ul doar implicitul. Feliile:
+  pornirea +0, totalul +2,7 kB (967,5 / 1 000 cu relieful).
   **Plafonul pornirii 120 kB (ADR 0145, decizia owner-ului din 24.11, „ok, ridica plafonul pornirii la 120 kB”):** după
   lotul al paisprezecelea, pornirea era 109,9 kB, cu ușa 114,4 și cu Atelierul 114,7 / 115, iar feliile următoare ale
   frezelor, exportului și aranjamentelor nu mai încăpeau în 0,3 kB. Poarta judecă tot trei măsuri sub același plafon
@@ -1674,6 +1683,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   cu un relief ales, „Un strat nou pe „…”” în „Relief din imagine”, centrat pe grila reliefului (`asezaPeGrila`); fișa
   reliefului din export spune straturile ascunse. **Un strat ascuns, chiar lipsă din browser, dă exact programul fără
   el.** Straturile erau deja în schema din v28: documentul rămâne v32. Felia: pornirea +0,1 kB, totalul +1,9 kB.
+  **Litofania, relieful ca imagine gri pe 16 biți, 4000² (ADR 0321–0323, feliile 18.1↑f, g, i, h, g-2, g-3)** gata pe 28.11,
+  unite în `main` pe 28.11 (`b414cfe6`): **f**, a treia alegere din capul ferestrei unei imagini, „Litofanie”: harta
+  grosimilor (albul t_min, negrul t_max, lumina liniară; `src/relief/litofanie.ts`), tăiată cu planul zero la grosimea
+  plăcii, cu rama, fața din spate și previzualizarea cu lumina din spate; lumina după material vine în 18.1↑f-2, cu plăcuța
+  de trepte a owner-ului; **g**, „Exportă ca imagine pe 16 biți…” (PNG gri, cu blocul `cncvs2-relief` pentru Z și celulă) și
+  importul lui, dus-întors pe aceiași octeți; **g-2**, TIFF-ul pe 8 și 16 biți ca relief, citit în workerul reliefului cu
+  cititorul trasării; **g-3**, „Strat din simulare”: tăietura simulată, strat ascuns pe grila reliefului; **i**, litofania pe
+  placa 18 (fișa plăcii, partea a doua); **h-1…h-8**, relieful la 4000²: refuzul plafonului de puncte înaintea cotelor (2,9
+  s, nu 187), distanța mai ieftină, câmpul și cota pe benzi, bazinul cotelor (peste 300 000 de puncte, liniile pe N
+  workere). **Programele, octet cu octet**; documentul rămâne v32 (v33, nefolosit); nimic pe server. Feliile: pornirea +0,
+  totalul +13,8 kB (961,3 / 1 000).
   **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
   `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
   101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
@@ -2173,6 +2193,41 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.11.2026, după-amiaza (a optzeci și una unire din cloud): **valorile frezei pe material și calculatorul avansului
+  (16.A↑g-1…g-3), unite în `main`** (sesiunea principală, ramura `unire-2811h`, peste relief). Linia frezelor, ramura
+  `wip/16.A-freze-g`, `cb446b9d` (vârful ramurii, `980eed80`, are în plus doar documentele lui `main`), PR-ul
+  `AndreiBesliu/cvs2#84` (ADR 0305, propus de linie, mers cu recomandările 1a–4a; pornită la „Porneste sesiunile, pune-le
+  sa continue cu ce aveau la rand” al owner-ului), unite în `47559857` (cu documentele lui `main` aduse în `61fcd394`): seturile
+  de valori pe material în freza din bibliotecă, potrivite cu eticheta foii; copia din proiect primește setul foii active,
+  iar rândul spune ce set s-a folosit; calculatorul avansului din editor (Vc → turația, fz și tăișurile → avansul). Fără
+  schemă nouă: documentul rămâne v32; nimic pe server. Otrăvurile 36 / 36. Ca să nu reia porțile după relief, frezele au
+  fost puse peste unirea reliefului înainte să intre ea în `main` (`unire-2811h` = `b414cfe6` + `cb446b9d`), cu un complet
+  combinat: 46141776092, verde, și rapidul ei, verde; completul liniei pe `cb446b9d` (46141657991, a doua încercare),
+  verde (unit 11 098 / 0, 12 sărite pe Linux; e2e 1 052 / 1 052; funcțiile pe emulatoare 142 / 142; paginile 62 / 62).
+  Totalul 967,5 / 1 000 kB (rămân 32,5), pornirea 112,1 kB (plafonul 125), `/admin` 138,3 / 200, contul 30,3 / 32.
+  Pe test pleacă după relief (lotul 74). **Alegerile din ADR 0305, cu recomandarea aplicată, la owner:** valorile pe
+  material stau în fiecare freză (nu o bibliotecă de materiale a aplicației); potrivirea după cuvintele etichetei foii;
+  calculatorul doar scrie turația și avansul; CSV-ul poartă doar setul implicit. Linia frezelor n-are altă felie pornită
+  (d, calibrarea, vine după placa 4). **La owner:** de încercat seturile pe material (o foaie cu eticheta „MDF”) și
+  calculatorul; restul listei, neschimbat.
+- 28.11.2026, după-amiaza (a optzecea unire din cloud): **relieful: litofania (18.1↑f), imaginea gri pe 16 biți (18.1↑g),
+  TIFF-ul (g-2), simularea ca strat (g-3), litofania pe placa 18 (18.1↑i) și relieful la 4000² (18.1↑h-1…h-8), unite în
+  `main`** (sesiunea principală, ramura `unire-2811f`, peste 16.A↑f-5). Linia reliefului, ramura `wip/18.1-relief`,
+  `a8dbc75b` (cu `1943be15` în ea), PR-ul `AndreiBesliu/cvs2#81` (ADR 0321 și 0322, acceptate cu recomandările aplicate;
+  ADR 0323 propus, mers cu recomandările 5a, 1a, 2a; pornite la „Porneste sesiunile, pune-le sa continue cu ce aveau la
+  rand” al owner-ului), unite în `b414cfe6` (cu documentele lui `main` aduse în `674178c1`). Linia a raportat întâi
+  `1943be15` (f, g, i, h), apoi a oferit `a8dbc75b` (g-2, g-3) cu completul în lucru: le-am luat împreună. Unirea s-a
+  pregătit întâi peste `57ea24f5` (`cf84bcc7`); cât îi rula completul a intrat 16.A↑f-5, deci a fost refăcută peste el
+  (`b414cfe6`), cu ciocnirile doar în DEVLOG și într-un bloc din traducerile roadmap-ului (ambele părți, în ordinea
+  cheilor), iar completul vechi, oprit. Porțile: completul liniei pe `a8dbc75b` (46137909881), verde (unit 11 147 / 0, 12
+  sărite pe Linux; e2e 1 041 / 1 041; funcțiile pe emulatoare 142 / 142; paginile 62 / 62); completul unirii pe `b414cfe6`
+  (46141598350) și rapidul ei, verzi. **Programele, octet cu octet**; documentul rămâne v32 (v33, nefolosit); nimic pe
+  server. Totalul 961,3 / 1 000 kB (+13,8), pornirea 112,1 kB. Valorile frezei pe material (16.A↑g-1…g-3, `cb446b9d`) sunt
+  puse peste relief pe `unire-2811h` (`47559857`), cu completul combinat în lucru. **La owner:** întrebarea 6 din ADR 0323
+  (mișcările programului ținute compact: memoria finisării la 4000² e acum a lor; cere un ADR al IR-ului); măsurătoarea la
+  4000² pe calculatorul lui (`node --expose-gc scripts/masura-relief.ts`); plăcuța cu trepte pentru 18.1↑f-2; de încercat
+  litofania, exportul PNG pe 16 biți și „Strat din simulare”. **Plafonul total:** cu frezele g, 967,5 / 1 000 kB (măsurat pe
+  unirea combinată), deci rămân 32,5 kB; o creștere cere decizia scrisă a owner-ului.
 - 28.11.2026, la prânz (a șaptezeci și noua unire din cloud): **silueta desenată în „Frezele mele” (16.A↑f-5), unită în
   `main`** (sesiunea principală, ramura `unire-2811g`, din `57ea24f5`). Linia frezelor, ramura `wip/16.A-freze-f5`,
   `f5bcb2b9` (cu `main` `e1b2d6e6` adus), PR-ul `AndreiBesliu/cvs2#83` (ADR 0304 §5, răspunsul 5a; pornită la „Porneste

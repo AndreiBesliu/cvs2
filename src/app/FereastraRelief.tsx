@@ -20,9 +20,15 @@ const ASTEPTARE_MS = 250;
 /** Alegerile ferestrei, ținute cât stă modulul încărcat (până la reîncărcarea paginii), ca la trasare. */
 let tinute: OptiuniImagine = IMPLICITE;
 
+/** Litofania (ADR 0321): grosimile din răspunsul 6a la ADR 0310 (o placă albă translucidă), fără ramă, tăiată din față. */
+type Litofanie = { readonly tmin: number; readonly tmax: number; readonly ramaMm: number; readonly spate: boolean };
+let tinuteLit: Litofanie = { tmin: 0.8, tmax: 3, ramaMm: 0, spate: false };
+
 const REFUZ: Readonly<Record<CodRefuzRelief, CheieSimpla>> = {
-  'imagine-citire': 'import.relief.refuz.imagine-citire', 'prea-mare': 'import.relief.refuz.prea-mare', celula: 'import.relief.refuz.celula',
+  'imagine-citire': 'import.relief.refuz.imagine-citire', tiff: 'import.relief.refuz.tiff', 'tiff-stricat': 'import.relief.refuz.tiff-stricat',
+  'prea-mare': 'import.relief.refuz.prea-mare', celula: 'import.relief.refuz.celula',
   gol: 'import.relief.refuz.gol', 'dale-lipsa': 'import.relief.refuz.altul', harta: 'import.relief.refuz.altul',
+  grosimi: 'import.litofanie.refuz.grosimi',
 };
 
 /**
@@ -54,6 +60,8 @@ type Props = {
   readonly jurnal: (e: unknown) => void;
   /** Relieful ales, dacă e unul: „Un strat nou pe …” devine a doua alegere. */
   readonly tinta?: TintaStrat;
+  /** Litofania (ADR 0321): grosimile rămase în locul înălțimilor, cu lumina din spate în previzualizare; mereu o piesă nouă. */
+  readonly litofanie?: boolean;
 };
 
 /**
@@ -61,16 +69,24 @@ type Props = {
  * netezirea), relieful umbrit în dreapta, calculat în workerul reliefului din dalele cuantizate (ce se vede e ce se salvează).
  * „Importă” păstrează întâi dalele în baza reliefurilor, apoi adaugă piesa prin `document.importa`.
  */
-export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, onImportat, onInchide, coada, onSari, de, jurnal, tinta }: Props) {
+export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, onImportat, onInchide, coada, onSari, de, jurnal, tinta, litofanie = false }: Props) {
   const limba = useLimba();
   const nr = (x: number, z = 3): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: z }).format(x);
   const [optiuni, setOptiuni] = useState<OptiuniImagine>(tinute);
+  const [lit, setLit] = useState<Litofanie>(tinuteLit);
+  /** Z-ul și celula din fișier (ADR 0322 §2), la un PNG pe 16 biți scris de aplicație: implicit da. */
+  const [zFisier, setZFisier] = useState(true);
+  const schimbaLit = (s: Partial<Litofanie>): void => {
+    const o = { ...lit, ...s };
+    tinuteLit = o;
+    setLit(o);
+  };
   /**
    * Unde merge imaginea (ADR 0320): o piesă nouă (implicit, ca înainte) sau un strat nou pe relieful ales; strat doar cu un
    * relief ales.
    */
   const [unde, setUnde] = useState<'piesa' | 'strat'>('piesa');
-  const pe = unde === 'strat' && tinta ? tinta.forma : null;
+  const pe = unde === 'strat' && tinta && !litofanie ? tinta.forma : null;
   /** Lățimea scrisă (mm); null: din DPI-ul fișierului (sau 96 px pe țol), ori, pe un strat, lățimea reliefului. */
   const [latime, setLatime] = useState<number | null>(null);
   const dpi = useMemo(() => dpiImagine(octeti) ?? 96, [octeti]);
@@ -102,7 +118,9 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
     const ceas = setTimeout(() => {
       const scara = latime !== null ? { latimeMm: latime } : pe ? { latimeMm: pe.nx * pe.celula } : { dpi };
       const grila = pe ? { pe: { nx: pe.nx, ny: pe.ny, celula: pe.celula } } : {};
-      reliefInBazin({ tip: 'din-imagine', imagine: new Blob([octeti.slice()]), optiuni, scara, ...grila }, { semnal: ac.signal }).then((r) => {
+      // Z-ul din fișier doar pentru un relief nou: litofania își face grosimile, iar un strat ia grila reliefului ales.
+      const felul = litofanie ? { litofanie: lit } : pe ? {} : { zDinFisier: zFisier };
+      reliefInBazin({ tip: 'din-imagine', imagine: new Blob([octeti.slice()]), optiuni, scara, ...grila, ...felul }, { semnal: ac.signal }).then((r) => {
         if (!ac.signal.aborted) setRez(r);
       }, (e: unknown) => {
         if (e instanceof ReliefAnulat || ac.signal.aborted) return;
@@ -111,7 +129,7 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
       });
     }, ASTEPTARE_MS);
     return () => { clearTimeout(ceas); ac.abort(); };
-  }, [octeti, optiuni, latime, dpi, pe]);
+  }, [octeti, optiuni, latime, dpi, pe, litofanie, lit, zFisier]);
 
   const ok: ReliefDinImagine | null = rez !== 'calcul' && rez.ok && rez.tip === 'din-imagine' ? rez : null;
   const pregatit = useMemo(() => (ok && !pe ? pregatitRelief(ok, nume) : null), [ok, nume, pe]);
@@ -147,6 +165,8 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
   };
 
   const latimeMm = ok ? ok.nx * ok.celula : null;
+  // Lățimea imaginii: la litofanie, fără ramă (rama se adaugă în jur, rotunjită la celule).
+  const latimeImagine = ok && latimeMm !== null && litofanie ? (ok.nx - 2 * Math.max(0, Math.round(lit.ramaMm / ok.celula))) * ok.celula : latimeMm;
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
       <div className="dialog-cutie dialog-trasare" ref={cutie} tabIndex={-1} data-testid="relief-fereastra">
@@ -158,9 +178,9 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
         <div className="trasare-fereastra">
           <div className="trasare-corp">
             <div className="trasare-comenzi" data-testid="relief-setari">
-              <AlegereRezultat ales="relief" onAlege={onAlege} dezactivat={lucru} />
-              <p className="mic">{t('import.relief.sfat')}</p>
-              {tinta && (
+              <AlegereRezultat ales={litofanie ? 'litofanie' : 'relief'} onAlege={onAlege} dezactivat={lucru} />
+              <p className="mic">{t(litofanie ? 'import.litofanie.sfat' : 'import.relief.sfat')}</p>
+              {tinta && !litofanie && (
                 <div className="segmentat" role="radiogroup" aria-label={t('import.relief.unde')}>
                   {(['piesa', 'strat'] as const).map((u) => (
                     <label key={u}>
@@ -180,28 +200,65 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
                   {(['l', 'r', 'g', 'b'] as const).map((s) => <option key={s} value={s}>{t(`import.relief.sursa.${s}`)}</option>)}
                 </select>
               </label>
-              <div className="segmentat" role="radiogroup" aria-label={t('import.relief.sens')}>
-                {([true, false] as const).map((alb) => (
-                  <label key={String(alb)}>
-                    <input type="radio" name="relief-sens" checked={optiuni.albSus === alb} data-camp={alb ? 'relief-alb-sus' : 'relief-negru-sus'}
-                      onChange={() => { schimba({ albSus: alb }); }} />
-                    {t(alb ? 'import.relief.sens.alb' : 'import.relief.sens.negru')}
+              {ok?.fisier && !litofanie && !pe && (ok.fisier.celula !== undefined ? (
+                <label className="rand">
+                  <input type="checkbox" checked={zFisier} data-camp="relief-z-fisier" disabled={lucru} onChange={(e) => { setZFisier(e.target.checked); }} />
+                  {t('import.relief.z-fisier', { min: nr(ok.fisier.zMin ?? 0), max: nr(ok.fisier.zMax ?? 0), celula: nr(ok.fisier.celula, 4) })}
+                </label>
+              ) : <p className="mic" data-testid="relief-16-biti">{t('import.relief.16-biti')}</p>)}
+              {litofanie ? (
+                <>
+                  <label className="rand">
+                    {t('import.litofanie.tmin')}
+                    <CampNumeric eticheta={t('import.litofanie.tmin')} valoare={lit.tmin} unitate="mm" camp="litofanie-tmin"
+                      onAplica={(x) => (x >= 0 && x < lit.tmax ? (schimbaLit({ tmin: x }), { ok: true }) : { ok: false, motiv: 'import.litofanie.refuz.grosimi' })} />
                   </label>
-                ))}
-              </div>
-              <label className="rand">
-                {t('import.relief.inaltime')}
-                <CampNumeric eticheta={t('import.relief.inaltime')} valoare={optiuni.inaltime} unitate="mm" semn camp="relief-inaltime"
-                  onAplica={(x) => (Math.abs(x) <= 1000 ? (schimba({ inaltime: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
-              </label>
-              <label className="rand">
-                {t('import.relief.baza')}
-                <CampNumeric eticheta={t('import.relief.baza')} valoare={optiuni.baza} unitate="mm" semn camp="relief-baza"
-                  onAplica={(x) => (Math.abs(x) <= 1000 ? (schimba({ baza: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
-              </label>
+                  <label className="rand">
+                    {t('import.litofanie.tmax')}
+                    <CampNumeric eticheta={t('import.litofanie.tmax')} valoare={lit.tmax} unitate="mm" camp="litofanie-tmax"
+                      onAplica={(x) => (x > lit.tmin && x <= 1000 ? (schimbaLit({ tmax: x }), { ok: true }) : { ok: false, motiv: 'import.litofanie.refuz.grosimi' })} />
+                  </label>
+                  <label className="rand">
+                    {t('import.litofanie.rama')}
+                    <CampNumeric eticheta={t('import.litofanie.rama')} valoare={lit.ramaMm} unitate="mm" camp="litofanie-rama"
+                      onAplica={(x) => (x >= 0 && x <= 1000 ? (schimbaLit({ ramaMm: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
+                  </label>
+                  <div className="segmentat" role="radiogroup" aria-label={t('import.litofanie.fata')}>
+                    {([false, true] as const).map((spate) => (
+                      <label key={String(spate)}>
+                        <input type="radio" name="litofanie-fata" checked={lit.spate === spate} data-camp={spate ? 'litofanie-spate' : 'litofanie-fata'}
+                          onChange={() => { schimbaLit({ spate }); }} />
+                        {t(spate ? 'import.litofanie.fata.spate' : 'import.litofanie.fata.fata')}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                <div className="segmentat" role="radiogroup" aria-label={t('import.relief.sens')}>
+                  {([true, false] as const).map((alb) => (
+                    <label key={String(alb)}>
+                      <input type="radio" name="relief-sens" checked={optiuni.albSus === alb} data-camp={alb ? 'relief-alb-sus' : 'relief-negru-sus'}
+                        onChange={() => { schimba({ albSus: alb }); }} />
+                      {t(alb ? 'import.relief.sens.alb' : 'import.relief.sens.negru')}
+                    </label>
+                  ))}
+                </div>
+                <label className="rand">
+                  {t('import.relief.inaltime')}
+                  <CampNumeric eticheta={t('import.relief.inaltime')} valoare={optiuni.inaltime} unitate="mm" semn camp="relief-inaltime"
+                    onAplica={(x) => (Math.abs(x) <= 1000 ? (schimba({ inaltime: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
+                </label>
+                <label className="rand">
+                  {t('import.relief.baza')}
+                  <CampNumeric eticheta={t('import.relief.baza')} valoare={optiuni.baza} unitate="mm" semn camp="relief-baza"
+                    onAplica={(x) => (Math.abs(x) <= 1000 ? (schimba({ baza: x }), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
+                </label>
+                </>
+              )}
               <label className="rand">
                 {t(pe ? 'import.relief.latime.strat' : 'import.relief.latime')}
-                <CampNumeric eticheta={t(pe ? 'import.relief.latime.strat' : 'import.relief.latime')} valoare={latime ?? (latimeMm === null ? null : Math.round(latimeMm * 1000) / 1000)} unitate="mm" camp="relief-latime"
+                <CampNumeric eticheta={t(pe ? 'import.relief.latime.strat' : 'import.relief.latime')} valoare={latime ?? (latimeImagine === null ? null : Math.round(latimeImagine * 1000) / 1000)} unitate="mm" camp="relief-latime"
                   onAplica={(x) => (x > 0 ? (setLatime(x), { ok: true }) : { ok: false, motiv: 'motiv.valoare-invalida' })} />
               </label>
               <label className="rand">
@@ -213,7 +270,7 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
             </div>
             <div className="trasare-previz">
               <div className="trasare-panza-loc">
-                <canvas ref={panza} className="trasare-panza relief-previz" role="img" aria-label={t('import.relief.previzualizare')} data-testid="relief-previz"
+                <canvas ref={panza} className="trasare-panza relief-previz" role="img" aria-label={t(litofanie ? 'import.litofanie.previzualizare' : 'import.relief.previzualizare')} data-testid="relief-previz"
                   hidden={!ok} />
               </div>
             </div>
@@ -228,11 +285,12 @@ export function FereastraRelief({ nume, octeti, onAlege, stareImporta, importa, 
                       nx: ok.nx, ny: ok.ny, celula: nr(ok.celula, 4), latime: nr(ok.nx * ok.celula, 2), inaltime: nr(ok.ny * ok.celula, 2), nume: tinta?.nume ?? '',
                     })}
                   </p>
-                  {ok.z && <p data-testid="relief-z">{t('import.relief.z', { min: nr(ok.z.min), max: nr(ok.z.max) })}</p>}
+                  {ok.z && <p data-testid="relief-z">{t(litofanie ? 'import.litofanie.z' : 'import.relief.z', { min: nr(ok.z.min), max: nr(ok.z.max) })}</p>}
+                  {litofanie && <p className="mic" data-testid="litofanie-taiere">{t('import.litofanie.taiere')}</p>}
                 </>
               )}
               {rez !== 'calcul' && !rez.ok && (
-                <p role="alert" className="avertisment" data-testid="relief-refuz">{t(REFUZ[rez.cod], { marime: rez.detaliu ?? '?' })}</p>
+                <p role="alert" className="avertisment" data-testid="relief-refuz">{t(REFUZ[rez.cod], { marime: rez.detaliu ?? '?', ce: rez.detaliu ?? '?' })}</p>
               )}
               {motivImport && <p role="status" className="avertisment" data-testid="import-motiv">{t(motivImport)}</p>}
               {motiv && <p role="alert" className="avertisment" data-testid="relief-motiv">{t(motiv)}</p>}

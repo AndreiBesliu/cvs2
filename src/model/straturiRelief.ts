@@ -62,11 +62,13 @@ export function idStratNou(f: FormaRelief): string {
   return `s${n}`;
 }
 
-/** Un strat nou, deasupra tuturor: harta lui (amprenta), numele și modul (implicit „adună”), vizibil; peste plafon, null. */
-export function cuStratNou(f: FormaRelief, nou: { readonly dale: string; readonly nume: string; readonly mod?: ModRelief }): FormaRelief | null {
+/** Un strat nou, deasupra tuturor: harta lui (amprenta), numele, modul (implicit „adună”) și vizibilitatea (implicit, vizibil); peste plafon, null. */
+export function cuStratNou(
+  f: FormaRelief, nou: { readonly dale: string; readonly nume: string; readonly mod?: ModRelief; readonly vizibil?: boolean },
+): FormaRelief | null {
   if (f.straturi.length >= STRATURI_RELIEF_MAXIM) return null;
   const n = numeCurat(nou.nume);
-  const s: StratRelief = { id: idStratNou(f), ...(n !== undefined ? { nume: n } : {}), mod: nou.mod ?? 'aduna', vizibil: true, dale: nou.dale };
+  const s: StratRelief = { id: idStratNou(f), ...(n !== undefined ? { nume: n } : {}), mod: nou.mod ?? 'aduna', vizibil: nou.vizibil ?? true, dale: nou.dale };
   return { ...f, straturi: [...f.straturi, s] };
 }
 
