@@ -295,3 +295,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     Ieșirea e RGBA scalată la 0 … 255, cu zecimale, deci `gri`, netezirea și litofania merg neschimbate.
   - **O probă a Z-ului din fișier schimbă întâi înălțimea ferestrei:** scara din `pHYs` și înălțimea implicită pot da din
     coincidență același relief (otrava G17).
+- **28.11: 18.1↑i gata pe ramură** (litofania pe placa 18, partea a doua a fișei): trei pătrate de gri într-o placă albă
+  translucidă de 6 mm, cu grosimile prezise de oracol și fișierele de aur. Tăierea e a owner-ului (o placă albă translucidă de
+  6 mm, frezele Ø3). Din rândurile ADR 0310 §8 rămâne **18.1↑h** (4000²), plus 18.1↑f-2 (lumina după material, după plăcuța
+  owner-ului) și, din ADR 0322 §5, TIFF-ul pe 16 biți și simularea ca strat.
+- **De ținut minte, din 18.1↑i:**
+  - **Oracolul materialului (`materialSecventaO`), cu bila, pe o grilă aliniată cu liniile:** o coloană fix la raza bilei de o
+    linie e atinsă doar pe ecuator, iar oracolul o ia sau nu după rotunjirea fiecărei mutări; deplasează grila judecății cu o
+    fracțiune de celulă (ramura plată are paza la 1 µm, cea a bilei nu).

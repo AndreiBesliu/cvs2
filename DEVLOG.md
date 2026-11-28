@@ -17313,3 +17313,17 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:15, pe `wip/
 - **Mărimea:** pornirea +0 (112,1 / 125), totalul 948,4 → 951,1 / 1 000.
 - **Documentele:** manualul (ro, en), fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile, indexul ADR.
 
+## 2026-11-28 — 18.1↑i: litofania pe placa 18 (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; „restul plăcii 18”). **Started:**
+28.11, 11:55, pe `wip/18.1-relief`, după 18.1↑g. **Completed:** 28.11, 12:35.
+
+- **Generatorul:** `test/placi/placa-18/genereaza-litofanie.ts` (trei pătrate de gri, placa albă translucidă de 6 mm, „Relief 3D”
+  cu planul zero la 6, freza plată Ø3 și bila Ø3), cu fișierele de aur `placa-18-litofanie-{1-T1,2-T2}.nc`.
+- **Predicțiile** (`placa18.litofanie.test.ts`, oracolul simulării): grosimile după T1 și T2, rama, nimic sub model, pasul pe
+  material, coborârea; **aurul** (`placa18.litofanie.aur.test.ts`).
+- **Găsit:** o coloană a grilei aliniate fix pe ecuatorul bilei dă o „tăietură” de 3,38 mm în oracolul materialului (lățime
+  zero); proba își deplasează grila cu 0,01 mm (pe două deplasări: 2,000 și 2,001 mm pe trecere).
+- **Fișa:** `docs/etape/placa-18.md`, partea a doua (materialul, pătratele, fișierele, tăierea, timpul, ce se măsoară).
+- **Documentele:** fișa etapei 3, nota liniei, traducerile. Fără cod de produs.
+
