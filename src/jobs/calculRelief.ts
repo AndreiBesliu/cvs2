@@ -5,8 +5,9 @@
  * cuantizate, deci e exact ce se salvează și ce se taie (§2).
  */
 import { compune, type Mod } from '../relief/compunere.ts';
+import { adancimePng, citestePng, scriePngGri16 } from '../io/png16.ts';
 import { asezaPeGrila } from '../relief/asezare.ts';
-import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA, type Grila } from '../relief/grila.ts';
+import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA, motivGrila, type Grila } from '../relief/grila.ts';
 import { dalaDinOcteti, type Dala } from '../relief/dala.ts';
 import { dale as numarDale, LATURA_DALA } from '../relief/grila.ts';
 import { hartaDinText, type Harta } from '../relief/harta.ts';
@@ -21,7 +22,16 @@ export type { OptiuniImagine } from '../relief/imagine.ts';
 export type { DalaModel } from '../relief/model.ts';
 
 /** Pixelii unei imagini, rând cu rând de sus în jos, RGBA (testele și imaginile deja decodate). */
-export type PixeliRelief = { readonly latime: number; readonly inaltime: number; readonly rgba: Uint8ClampedArray<ArrayBuffer> | Uint8Array<ArrayBuffer> };
+export type PixeliRelief = {
+  readonly latime: number; readonly inaltime: number;
+  /** RGBA, de la 0 la 255; cu zecimale la un PNG pe 16 biți (ADR 0322), citit de cititorul propriu. */
+  readonly rgba: Uint8ClampedArray<ArrayBuffer> | Uint8Array<ArrayBuffer> | Float64Array;
+  /** Un PNG pe 16 biți (ADR 0322): adâncimea și, dacă l-a scris aplicația, Z-ul și celula lui. */
+  readonly fisier?: FisierRelief;
+};
+
+/** Ce spune fișierul despre relief (ADR 0322): adâncimea și, de la aplicație, Z-ul (mm) și celula. */
+export type FisierRelief = { readonly adancime: 16; readonly zMin?: number; readonly zMax?: number; readonly celula?: number };
 
 /** Un strat de desenat: modul, vizibilitatea, textul hărții și octeții dalelor ei (după amprentă). */
 export type StratDeDesenat = {
@@ -51,6 +61,17 @@ export type CerereRelief =
      * (mm, rotunjită la celule) și fața tăiată; previzualizarea arată lumina din spate. Nu se combină cu `pe`.
      */
     readonly litofanie?: { readonly tmin: number; readonly tmax: number; readonly ramaMm: number; readonly spate: boolean };
+    /**
+     * Z-ul din fișier (ADR 0322 §2): la un PNG pe 16 biți scris de aplicație, Z = z_min + g · (z_max − z_min) și celula din
+     * fișier (scara, înălțimea, baza și netezirea ferestrei nu contează); fără Z în fișier, ca o imagine oarecare.
+     */
+    readonly zDinFisier?: boolean;
+  }
+  | {
+    /** Relieful ca imagine pe 16 biți (ADR 0322 §1): compusul straturilor vizibile, scris ca PNG gri pe 16 biți. */
+    readonly tip: 'spre-png';
+    readonly nx: number; readonly ny: number; readonly celula: number;
+    readonly straturi: readonly StratDeDesenat[];
   }
   | {
     readonly tip: 'desen';
@@ -81,6 +102,8 @@ export type ReliefDinImagine = {
   readonly octeti: Readonly<Record<string, Uint8Array<ArrayBuffer>>>;
   readonly z: { readonly min: number; readonly max: number } | null;
   readonly umbrit: Umbrit;
+  /** Un PNG pe 16 biți (ADR 0322): ce spune fișierul, ca fereastra să ofere Z-ul din el. */
+  readonly fisier?: FisierRelief;
 };
 
 /** Desenul unui relief: Z-ul compusului și imaginea umbrită (redusă cu `k`). */
@@ -93,10 +116,20 @@ export type DesenRelief = {
 /** Modelul unui relief: dalele cerute, compuse și reduse cu `k`, fiecare cu Z-ul ei. */
 export type ModelRelief = { readonly ok: true; readonly tip: 'model'; readonly k: number; readonly dale: readonly DalaModel[] };
 
-export type RaspunsRelief = ReliefDinImagine | DesenRelief | ModelRelief | RefuzRelief;
+/** Relieful ca PNG pe 16 biți (ADR 0322). */
+export type PngRelief = { readonly ok: true; readonly tip: 'png'; readonly octeti: Uint8Array<ArrayBuffer> };
+
+export type RaspunsRelief = ReliefDinImagine | DesenRelief | ModelRelief | PngRelief | RefuzRelief;
 
 /** Imaginea decodată de browser exact (fără conversie de culoare și fără alfa premultiplicat, ADR 0310 §3). */
 async function decodeaza(b: Blob): Promise<PixeliRelief | RefuzRelief> {
+  // Un PNG pe 16 biți (ADR 0322): browserul l-ar tăia la 8 biți, deci îl citește cititorul propriu.
+  if (adancimePng(new Uint8Array(await b.slice(0, 33).arrayBuffer())) === 16) {
+    const p = await citestePng(new Uint8Array(await b.arrayBuffer()));
+    if ('eroare' in p) return { ok: false, cod: 'imagine-citire', detaliu: `png: ${p.eroare}` };
+    if (p.latime > LATURA_MAXIMA || p.inaltime > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${p.latime} × ${p.inaltime}` };
+    return { latime: p.latime, inaltime: p.inaltime, rgba: p.rgba, fisier: { adancime: 16, ...metaPng(p.text['cncvs2-relief']) } };
+  }
   let bmp: ImageBitmap;
   try {
     bmp = await createImageBitmap(b, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
@@ -166,6 +199,15 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
   if ('ok' in px) return px;
   const nx = px.latime, ny = px.inaltime;
   if (nx > LATURA_MAXIMA || ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${nx} × ${ny}` };
+  // Z-ul din fișier (ADR 0322 §2): celula și înălțimile din el, exact cum au plecat.
+  const m = px.fisier;
+  if (c.zDinFisier && m && m.zMin !== undefined && m.zMax !== undefined && m.celula !== undefined) {
+    const g: Grila = { nx, ny, celula: m.celula };
+    if (motivGrila(g) !== null) return { ok: false, cod: 'celula' };
+    const l = gri(px.rgba, nx, ny, 'l'), v = new Float32Array(nx * ny);
+    for (let k = 0; k < v.length; k++) { const x = l[k] ?? NaN; v[k] = x !== x ? NaN : m.zMin + x * (m.zMax - m.zMin); }
+    return dinValori(v, g, undefined, m);
+  }
   const pixel = celulaDinScara(c.scara, nx, ny);
   if (pixel === 'celula') return { ok: false, cod: 'celula' };
   if (c.litofanie) {
@@ -175,17 +217,17 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
       { tmin: L.tmin, tmax: L.tmax, rama: L.ramaMm / pixel, spate: L.spate });
     if (lit.nx > LATURA_MAXIMA || lit.ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${lit.nx} × ${lit.ny}` };
     if (lit.nx * pixel > LATURA_MM_MAXIMA || lit.ny * pixel > LATURA_MM_MAXIMA) return { ok: false, cod: 'celula' };
-    return dinValori(lit.valori, { nx: lit.nx, ny: lit.ny, celula: pixel }, { tmin: L.tmin, tmax: L.tmax });
+    return dinValori(lit.valori, { nx: lit.nx, ny: lit.ny, celula: pixel }, { tmin: L.tmin, tmax: L.tmax }, m);
   }
   const valori = reliefDinPixeli(px.rgba, nx, ny, c.optiuni);
   // Pe un relief ales, grila e a lui, iar imaginea se așază pe ea; altfel, grila e a imaginii.
   const g: Grila = c.pe ?? { nx, ny, celula: pixel };
-  return dinValori(c.pe ? asezaPeGrila(valori, nx, ny, pixel, g) : valori, g);
+  return dinValori(c.pe ? asezaPeGrila(valori, nx, ny, pixel, g) : valori, g, undefined, m);
 }
 
 /** Stratul din valorile pe grila `g`, citit înapoi din dalele cuantizate: harta, octeții, Z-ul și desenul. */
 async function dinValori(
-  valori: ArrayLike<number>, { nx, ny, celula }: Grila, lumina?: { readonly tmin: number; readonly tmax: number },
+  valori: ArrayLike<number>, { nx, ny, celula }: Grila, lumina?: { readonly tmin: number; readonly tmax: number }, fisier?: FisierRelief,
 ): Promise<ReliefDinImagine | RefuzRelief> {
   const st = await stratDinGrila(valori, nx, ny);
   // Ce se arată e citit din dalele cuantizate (ADR 0310 §2), ca un relief cu acest singur strat: compusul pornește de la 0,
@@ -199,11 +241,12 @@ async function dinValori(
   for (const [h, o] of st.octeti) octeti[h] = o;
   // Litofania (ADR 0321 §6): lumina din spate, citită tot din dalele cuantizate; altfel relieful umbrit.
   const umbrit = lumina ? imagineLumina(luminaDinGrosimi(r.valori, lumina.tmin, lumina.tmax), r.nx, r.ny) : umbreste(r.valori, r.nx, r.ny, celula * k);
-  return { ok: true, tip: 'din-imagine', nx, ny, celula, harta: st.text, amprenta: st.amprenta, octeti, z, umbrit };
+  return { ok: true, tip: 'din-imagine', nx, ny, celula, harta: st.text, amprenta: st.amprenta, octeti, z, umbrit, ...(fisier ? { fisier } : {}) };
 }
 
-function desen(c: Extract<CerereRelief, { tip: 'desen' }>): DesenRelief | RefuzRelief {
-  const n = c.nx * c.ny, straturi = [];
+/** Compusul straturilor vizibile ale unei cereri, întreg, sau de ce nu se poate (o hartă greșită, dale lipsă). */
+function compusCerere(c: { readonly nx: number; readonly ny: number; readonly straturi: readonly StratDeDesenat[] }): Float32Array | RefuzRelief {
+  const straturi = [];
   for (const s of c.straturi) {
     if (!s.vizibil) continue;
     const h = hartaDinText(s.harta);
@@ -212,7 +255,43 @@ function desen(c: Extract<CerereRelief, { tip: 'desen' }>): DesenRelief | RefuzR
     if (!d.ok) return { ok: false, cod: 'dale-lipsa', detaliu: d.lipsa.join(',') };
     straturi.push({ mod: s.mod, vizibil: true, valori: grilaDinDale(c.nx, c.ny, d.dale) });
   }
-  const compus = compune(n, straturi);
+  return compune(c.nx * c.ny, straturi);
+}
+
+/**
+ * Relieful ca PNG gri pe 16 biți (ADR 0322 §1): compusul, scalat între z_min și z_max la 0 … 65 535 (un relief plat, la 0),
+ * rândul de sus al imaginii fiind rândul de sus al reliefului; în fișier, Z-ul și celula (`tEXt`) și scara (`pHYs`).
+ */
+async function sprePng(c: Extract<CerereRelief, { tip: 'spre-png' }>): Promise<PngRelief | RefuzRelief> {
+  const compus = compusCerere(c);
+  if (!(compus instanceof Float32Array)) return compus;
+  const z = intervalZ(compus) ?? { min: 0, max: 0 }, d = z.max - z.min, v = new Uint16Array(c.nx * c.ny);
+  for (let j = 0; j < c.ny; j++) {
+    for (let i = 0; i < c.nx; i++) {
+      const x = compus[j * c.nx + i] ?? 0;
+      v[(c.ny - 1 - j) * c.nx + i] = d > 0 ? Math.round((x - z.min) / d * 65535) : 0;
+    }
+  }
+  const text = { 'cncvs2-relief': JSON.stringify({ v: 1, zMin: z.min, zMax: z.max, celula: c.celula }) };
+  const octeti = await scriePngGri16(v, c.nx, c.ny, { text, pixeliPeMetru: 1000 / c.celula });
+  return { ok: true, tip: 'png', octeti: new Uint8Array(octeti) };
+}
+
+/** Z-ul și celula scrise de aplicație într-un PNG (`cncvs2-relief`, ADR 0322), dacă sunt întregi și finite. */
+function metaPng(t: string | undefined): Omit<FisierRelief, 'adancime'> {
+  if (t === undefined) return {};
+  try {
+    const m = JSON.parse(t) as { v?: unknown; zMin?: unknown; zMax?: unknown; celula?: unknown };
+    const n = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+    return m.v === 1 && n(m.zMin) && n(m.zMax) && n(m.celula) && m.zMax >= m.zMin && m.celula > 0 ? { zMin: m.zMin, zMax: m.zMax, celula: m.celula } : {};
+  } catch {
+    return {};
+  }
+}
+
+function desen(c: Extract<CerereRelief, { tip: 'desen' }>): DesenRelief | RefuzRelief {
+  const compus = compusCerere(c);
+  if (!(compus instanceof Float32Array)) return compus;
   const k = factorReducere(c.nx, c.ny), r = reduce(compus, c.nx, c.ny, k);
   return { ok: true, tip: 'desen', z: intervalZ(compus), umbrit: umbreste(r.valori, r.nx, r.ny, c.celula * k), k };
 }
@@ -253,10 +332,11 @@ function model(c: Extract<CerereRelief, { tip: 'model' }>): ModelRelief | RefuzR
 
 /** Răspunsul unei cereri, cu tablourile de transferat (ADR 0014). */
 export async function raspundeRelief(c: CerereRelief): Promise<{ readonly raspuns: RaspunsRelief; readonly transfer: ArrayBuffer[] }> {
-  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : c.tip === 'desen' ? desen(c) : model(c);
+  const raspuns = c.tip === 'din-imagine' ? await dinImagine(c) : c.tip === 'desen' ? desen(c) : c.tip === 'spre-png' ? await sprePng(c) : model(c);
   const transfer: ArrayBuffer[] = [];
   if (raspuns.ok) {
     if (raspuns.tip === 'model') for (const d of raspuns.dale) transfer.push(d.z.buffer);
+    else if (raspuns.tip === 'png') transfer.push(raspuns.octeti.buffer);
     else transfer.push(raspuns.umbrit.rgba.buffer);
     if (raspuns.tip === 'din-imagine') for (const o of Object.values(raspuns.octeti)) transfer.push(o.buffer);
   }
