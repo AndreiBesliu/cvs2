@@ -1530,6 +1530,14 @@ schimbări** pune la loc ce era (în **Listă**, și închide editorul). Dacă a
 când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
 cere confirmarea; proiectele care o folosesc își păstrează copia ei.
 
+**Valorile pe material**: pe lângă valorile de lucru, o freză poate avea câte un set pe material (cel mult 16). **Un set pe
+material** adaugă unul, pornit de la valorile de lucru de acum, cu materialul de scris; **✕** îl scoate. Pe o foaie al cărei
+material (din **Nume, mărime și material…**) are toate cuvintele unui set, freza taie cu valorile setului: „MDF” se potrivește
+cu „MDF alb 18” și cu „mdf 16”, „Lemn tare” cu „lemn tare stejar”, dar nu cu „lemn moale”; majusculele, diacriticele și
+ordinea cuvintelor nu contează. Dacă se potrivesc mai multe, câștigă cel cu cele mai multe cuvinte („MDF alb” înaintea lui
+„MDF”), iar la egalitate primul din listă. Pe o foaie fără material sau fără potrivire, freza taie cu valorile de lucru. Fișa
+arată seturile într-un tabel.
+
 **Frezele standard** vin singure: la prima deschidere a ferestrei sau a panoului de proprietăți, biblioteca primește șase
 freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12 și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale
 aplicației (18 000 rot/min, avansul 1 000 mm/min, plonjarea 300 mm/min). Le schimbi apoi după frezele tale. Se pun o singură
@@ -1542,7 +1550,8 @@ calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel),
 T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
 Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
 întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
-**Sari**. Rândurile greșite se sar și se numără.
+**Sari**. Rândurile greșite se sar și se numără. Seturile pe material merg doar în fișierul JSON: un CSV nu le are, iar importat peste o freză cu
+seturi, i le lasă.
 
 Jos, fereastra spune unde stă biblioteca: **Doar în acest browser** (fără cont). Într-o fereastră privată sau cu datele
 site-ului blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației

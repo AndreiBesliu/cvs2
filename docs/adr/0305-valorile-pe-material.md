@@ -31,7 +31,7 @@ pe material (§11, felia g)”), §2 (numărul de tăișuri, „calculatorul ava
 
 ### 1. Seturile pe material stau în freză
 
-- Câmpul nou `materiale` pe freza din bibliotecă: o listă de cel mult 20 de seturi, fiecare cu numele materialului (≤ 40 de
+- Câmpul nou `materiale` pe freza din bibliotecă: o listă de cel mult 16 seturi (cu cea mai mare freză desenată, încap în cont, `OCTETI_FREZA`), fiecare cu numele materialului (≤ 40 de
   caractere, unic în freză fără majuscule și fără diacritice) și cele cinci valori de lucru (turația, avansul, plonjarea,
   pasul, pasul lateral), cu marginile valorilor de azi.
 - Valorile de azi rămân setul implicit („Orice material”), folosit când foaia n-are material sau niciun set nu se potrivește.

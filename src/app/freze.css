@@ -731,3 +731,73 @@
     width: calc(var(--tinta) + 0.75rem);
   }
 }
+
+/* Valorile pe material (ADR 0305 §1): fiecare set e o cartelă cu materialul și „✕” sus, apoi cele cinci valori pe grilă. */
+.freze-seturi {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.freze-set {
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  padding: var(--sp-2);
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.freze-set-cap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--sp-2);
+}
+
+.freze-set-scoate {
+  min-width: var(--tinta);
+  min-height: var(--tinta);
+}
+
+.freze-materiale-jos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.freze-materiale-jos button {
+  min-height: var(--tinta);
+}
+
+/* Tabelul seturilor din fișă: pe telefon, se derulează în locul lui, nu pagina. */
+.freze-seturi-lista {
+  overflow-x: auto;
+}
+
+.freze-seturi-tabel {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.freze-seturi-tabel th,
+.freze-seturi-tabel td {
+  padding: 2px var(--sp-1);
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+.dialog .freze-seturi-tabel thead th {
+  color: var(--t-slab);
+  font-weight: 600;
+  font-size: var(--fs-1);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.freze-seturi-tabel tbody td:first-child {
+  overflow-wrap: anywhere;
+}

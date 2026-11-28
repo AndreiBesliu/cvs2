@@ -1587,6 +1587,14 @@ back what was there (in **List**, it also closes the editor). If you pick anothe
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
+**Values per material**: besides the working values, a bit can have one set per material (at most 16). **A set for a
+material** adds one, starting from the current working values, with the material to type; **✕** removes it. On a sheet
+whose material (from **Name, size and material…**) has every word of a set, the bit cuts with that set’s values: “MDF”
+matches “MDF white 18” and “mdf 16”, “Hard wood” matches “hard wood oak” but not “soft wood”; capitals, accents and word
+order do not matter. If several match, the one with the most words wins (“MDF white” before “MDF”), and on a tie the first in
+the list. On a sheet without a material or without a match, the bit cuts with the working values. The card shows the sets in a
+table.
+
 **The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
 bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
 default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They
@@ -1600,7 +1608,8 @@ computer. **Import…** also reads a CSV (saved from Excel, for example) with a 
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
-“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted.
+“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted. The values per material travel only in the JSON
+file: a CSV does not have them, and imported over a bit with sets, it leaves them.
 
 At the bottom, the window says where the library lives: **Only in this browser** (without an account). In a private window or with the site’s
 data blocked, the bits last only as long as the tab, and the window says so. A library written by a newer version of the app
