@@ -1035,6 +1035,15 @@ mai mare. Ce vezi e calculat din relieful salvat, deci e exact ce se păstrează
 planul zero. O imagine toată transparentă, una mai mare de 8192 × 8192 pixeli sau o lățime care dă o celulă în afara
 marginilor (0,001 … 100 mm, cel mult 10 m pe latură) sunt refuzate, cu motivul.
 
+**Litofania:** alege **Litofanie** în locul lui **Relief**. O litofanie e o placă translucidă a cărei grosime urmează
+imaginea: subțire unde imaginea e deschisă, groasă unde e închisă, deci cu lumina din spate placa arată imaginea. Relieful e
+harta grosimilor rămase (lumina liniară): **Grosimea minimă (alb)** (implicit 0,8 mm) și **Grosimea maximă (negru)**
+(implicit 3 mm); un pixel transparent e la grosimea maximă. **Rama** (mm, implicit 0) adaugă în jur o bandă la grosimea
+maximă; **Se taie**: **Din față** (implicit) sau **Din spate (oglindită)**, ca imaginea să se citească drept dinspre fața
+netăiată. Previzualizarea arată litofania cu lumina din spate. Se taie cu finisarea (și degroșarea) cu **planul zero la
+grosimea plăcii** (în Tăierea, „Relieful pe Z”): sub suprafață rămân atunci exact grosimile de aici, iar cu „Peretele rămâne”
+placa din jur e rama. Placa trebuie să fie cel puțin cât grosimea maximă.
+
 **În panou:** cu piesa aleasă, secțiunea **Relieful** arată mărimea, celula, celulele, înălțimile și **straturile**, de sus
 în jos, ca în compus. Relieful e suma straturilor lui, de jos în sus, fiecare cu modul lui: **adună**, **scade**, **păstrează
 înalt** (cel mai înalt dintre strat și ce e sub el), **păstrează jos**, **înlocuiește** sau **înmulțește**; un pixel gol al

@@ -1066,6 +1066,16 @@ the sheet, selected, in one undo step; dropped on the board, with its centre at 
 height: there the relief is the zero plane. A fully transparent image, one larger than 8192 × 8192 pixels, or a width that
 gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
 
+**The lithophane:** choose **Lithophane** instead of **Relief**. A lithophane is a translucent plate whose thickness follows
+the image: thin where the image is light, thick where it is dark, so with light from behind the plate shows the image. The
+relief is the map of the remaining thicknesses (linear light): **Minimum thickness (white)** (0.8 mm by default) and
+**Maximum thickness (black)** (3 mm by default); a transparent pixel is at the maximum thickness. **Frame** (mm, 0 by default)
+adds a band around it at the maximum thickness; **Cut from**: **The front** (the default) or **The back (mirrored)**, so the
+image reads the right way from the uncut face. The preview shows the lithophane with light from behind. It is cut with the
+finishing (and the roughing) with **the zero plane at the plate thickness** (in Cutting, “Relief on Z”): exactly the
+thicknesses here then remain under the surface, and with “The wall stays” the plate around it is the frame. The plate must be
+at least as thick as the maximum thickness.
+
 **In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
 **layers**, top to bottom, as in the composite. The relief is the sum of its layers, from the bottom up, each with its mode:
 **add**, **subtract**, **keep higher** (the higher of the layer and what is below it), **keep lower**, **replace** or

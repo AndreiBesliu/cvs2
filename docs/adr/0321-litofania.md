@@ -25,7 +25,7 @@ relief: suprafața tăiată lasă sub ea grosimea dorită.
    Funcțiile sunt pure, în `src/relief/litofanie.ts`, și se probează pe hârtie (pătratele de gri, cu grosimile lor).
 2. **Se taie cu planul zero la grosimea plăcii** (finisarea și degroșarea, „Relieful pe Z: planul zero”, ADR 0312 §2):
    suprafața e atunci la −T + t, deci sub ea rămân exact t mm. Cu „Peretele rămâne”, placa din jurul reliefului rămâne
-   netăiată, deci e rama naturală a litofaniei. Fereastra o spune, cu grosimea foii active.
+   netăiată, deci e rama naturală a litofaniei. Fereastra și manualul o spun.
 3. **Pixelii transparenți** sunt la grosimea maximă (opaci, ca o ramă), nu goi: o litofanie fără găuri.
 4. **Rama** (mm, implicit 0): o bandă în jurul imaginii, la grosimea maximă; relieful crește cu ea pe fiecare latură (celula
    rămâne a imaginii, deci rama se rotunjește la celule întregi).

@@ -56,6 +56,8 @@ test('litofania: grosimile, rama, lumina din spate (și oglinda din spate), apoi
   await page.locator('[data-camp="litofanie-rama"]').fill('2');
   await page.locator('[data-camp="litofanie-rama"]').press('Enter');
   await expect(page.getByTestId('relief-grila')).toHaveText('Grila: 34 × 14 celule de 1 mm (o celulă pe pixel); relieful are 34 × 14 mm.');
+  // Lățimea e a imaginii, fără ramă.
+  await expect(page.locator('[data-camp="relief-latime"]')).toHaveValue('30');
   await expect(page.getByTestId('relief-z')).toHaveText('Grosimile: de la 0,8 la 3 mm.');
   await expect(page.getByTestId('litofanie-taiere')).toContainText('planul zero la grosimea plăcii');
   // Lumina din spate: albul (celula 7 a rândului din mijloc) luminos, negrul (27) și rama (0) întunecate, griul la jumătate.
