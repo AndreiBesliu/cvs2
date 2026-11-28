@@ -321,4 +321,9 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   programele care ies, octet cu octet. Urmează 1a: liniile finisării pe workerele bazinului CAM.
   - **O margine de jos a trecerilor dintr-un punct al traseului e sigură doar dacă vârful lui e socotit ca în bucla mare** (aceleași
     segmente, aceeași ordine), cu indiciul piramidei pus la loc și cu toleranța mai largă decât a numărului adevărat.
+- **28.11: 18.1↑h-4 gata pe ramură** (1a, întâi distanța mai ieftină): finisarea la 4000² și 0,5, 117,6 → 43,5 s; la 0,3 într-o
+  trecere, 69,4 s, cu 3,1 GB. Programele, octet cu octet. Urmează liniile pe workere și memoria pe benzi (2a): mișcările ținute
+  toate sunt acum partea cea mai grea a memoriei.
+  - **Într-o căutare care ramifică și taie, distanța exactă trebuie doar pe frunze;** pe blocuri ajunge o margine de jos dovedită
+    (cu o rezervă pentru rotunjiri), iar proba e forța brută peste toate celulele, la `===`.
 

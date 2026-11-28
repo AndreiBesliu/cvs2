@@ -118,3 +118,21 @@ punctul ales, deci calculul de după pornește ca înainte: programele care ies 
   97 de treceri ies, 98 și 200 sunt refuzate fără cote (sub un sfert din timpul programului întreg), iar cu un ac în care bila nu
   intră (cea mai joasă celulă) refuzul vine după cote, același. **Otrăvurile:** `test/otravuri/18.1h3.py`, 6 / 6.
 
+## Implementarea 1a, întâi distanța mai ieftină (felia 18.1↑h-4)
+
+În `cotaSegment`, tăierea blocurilor piramidei folosește o margine de jos a distanței, ieftină: de la mijlocul segmentului la
+cutie, minus jumătatea lungimii lui (orice punct al segmentului e la cel mult atât de mijloc), minus o rezervă de 1e-9 mm pentru
+rotunjiri; distanța exactă (`distSegmentCutie`) se socotește doar pe frunze, unde dă valoarea. Copiii stau în cutia părintelui,
+deci marginea lui le e și lor margine (o tăiere înaintea distanței lor). Un bloc tăiat are toate frunzele cel mult cât marginea,
+deci maximul e cel al parcurgerii tuturor celulelor.
+
+- **Proba:** `test/unit/reliefFinisare.cota.test.ts`: cota = forța brută peste toate celulele, la `===`, pe reliefuri la
+  întâmplare (aspre, cu goluri, cu platouri egale), segmente scurte, lungi, degenerate și pe lângă relief, toate frezele; și pe
+  liniile unei finisări, segment după segment. Programele, octet cu octet: aurul plăcii 18 și probele finisării și degroșării
+  (94 / 94); pe reliefuri de 600², amprenta rezultatului la fel cu a codului de dinainte. **Otrăvurile:** `18.1h4.py`, 7 / 7.
+- **Măsurat** (4000², un fir): degroșarea 27,4 → 12,6 s; finisarea la pasul 0,5, 117,6 → 43,5 s (aceleași 6 351 155 de mișcări);
+  la pasul 0,3, într-o singură trecere (pasul pe trecere 6, sub plafonul punctelor), 69,4 s, cu 10,6 M de mișcări și 3,1 GB.
+  Pe 600²: bila de 2,8 ori mai repede, liniile la 30° de 3,5 ori, V-ul de 3,8 ori.
+- **Ce rămâne pentru prag (10 s):** liniile pe workere (aproape liniar cu nucleele: liniile sunt independente) și memoria (2a),
+  unde mișcările unei finisări la 0,3, ținute toate, cer singure peste 2 GB.
+

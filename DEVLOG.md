@@ -17373,3 +17373,15 @@ owner-ului); ordinul „unește ce se poate”
 - **Pe test:** lotul 70, după completul de pe `main`.
 - **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul reliefului din
   `docs/linii/README.md`.
+
+## 2026-11-28 — 18.1↑h-4: cota segmentului mai ieftină, exactă (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, 1a, cu recomandarea aplicată (confirmată de sesiunea principală: „mergi cu recomandările
+(1a, 2a, 5a)”). **Started:** 28.11, 11:23, pe `wip/18.1-relief`, după 18.1↑h-3. **Completed:** 28.11, 11:36.
+
+- **CAM-ul** (`cotaSegment`, `src/cam/reliefFinisare.ts`): marginea de jos ieftină a distanței pe blocuri, distanța exactă doar
+  pe frunze; finisarea la 4000² și 0,5, 117,6 → 43,5 s; degroșarea, 27,4 → 12,6 s; programele, octet cu octet.
+- **Proba:** `test/unit/reliefFinisare.cota.test.ts` (forța brută). **Otrăvurile:** `18.1h4.py`, 7 / 7.
+- **Sonda** (`scripts/masura-relief.ts`) primește pasul pe trecere: la 0,3, într-o trecere, 69,4 s și 3,1 GB.
+- Cu `main` adus (`f0d031e7`, 18.1↑j unită).
+
