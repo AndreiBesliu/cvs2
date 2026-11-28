@@ -1,12 +1,15 @@
 /**
  * Construcțiile gata din atelierul Easy 3Draw (ADR 0284, partea E; felia 3.Ci), pe pagina de sine stătătoare a
  * planificatorului (din aceleași surse ca pachetul). În vederea „Modelul”, panoul „Construcții gata”:
- * - felul (șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu elice) și câmpurile lui, în margini;
+ * - felul (șasiul cu patru roți, cutia de angrenaje, brațul de macara, barca cu elice, ventilatorul) și câmpurile lui, în
+ *   margini;
  * - ce iese, pe hârtie: mărimile mecanismului și câte piese are, cu avertismentul motorului când lungește șasiul;
  * - „Fă construcția”: o construcție nouă, cu numele felului (cu numărul următor, dacă e luat), cu piesele prinse între ele;
  *   verificarea din 3.Cg spune că nicio piesă nu plutește, niciuna nu intră în alta și toate se țin între ele.
  * Valorile, pe hârtie: șasiul 8 × 6 cu roțile de Ø30,4 are axele la 8 · (8 − 2) = 48 mm și roțile de pe un ax la
  * 8 · 6 + 26,2 = 74,2 mm; 13 piese (placa, 2 șine, 2 axe, 4 roți, 4 bucșe). Cu Ø56, cel puțin 10 știfturi (axele la 64).
+ * Ventilatorul (ADR 0341, felia 3.Cn): Ø40, grinda de 2 · 3 + 1 = 7 găuri, axul de 3; Ø48, grinda de 9; 7 piese (grinda,
+ * 2 știfturi, carcasa, axul, bucșa, rotorul), și din editorul ventilatorului, cu „Fă-l în model”.
  */
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
@@ -39,7 +42,7 @@ test('panoul e strâns la deschidere; desfăcut, arată șasiul 8 × 6 cu ce ies
   await expect(panou(page)).not.toHaveAttribute('open', '');
   await page.locator('#at-cg > summary').click();
   await expect(page.locator('#at-cg-fel')).toHaveValue('sasiu');
-  await expect(page.locator('#at-cg-fel option')).toHaveText(['Șasiu cu patru roți', 'Cutie de angrenaje', 'Braț de macara', 'Barcă cu elice']);
+  await expect(page.locator('#at-cg-fel option')).toHaveText(['Șasiu cu patru roți', 'Cutie de angrenaje', 'Braț de macara', 'Barcă cu elice', 'Ventilator']);
   await expect(page.locator('#at-cg-lung')).toHaveValue('8');
   await expect(page.locator('#at-cg-lat')).toHaveValue('6');
   await expect(page.locator('#at-cg-roata option')).toHaveText(['Ø30,4', 'Ø43,2', 'Ø56']);
@@ -132,4 +135,42 @@ test('cutia de angrenaje, brațul de macara și barca: ce iese pe hârtie, iar c
   // valorile fiecărui fel rămân cât fereastra e deschisă: înapoi la macara, unghiul e tot 0
   await page.locator('#at-cg-fel').selectOption('macara');
   await expect(page.locator('#at-cg-unghi')).toHaveValue('0');
+});
+
+test('ventilatorul (ADR 0341): din panou, Ø40 și grinda de 7; din editor, „Fă-l în model” îl pune cu valorile lui, prins și verificat', async ({ page }) => {
+  await deschide(page);
+  await page.locator('#at-cg > summary').click();
+  await page.locator('#at-cg-fel').selectOption('ventilator');
+  await expect(page.locator('#at-cg-diametru')).toHaveValue('40');
+  await expect(page.locator('#at-cg-palete')).toHaveValue('7');
+  await expect(page.locator('#at-cg-urechi')).toHaveValue('2');
+  await expect(text(page)).toHaveText('Grinda are 7 găuri, axul 3 știfturi; rotorul stă pe ax, în mijlocul carcasei. 7 piese.');
+  await page.locator('#at-cg-fa').click();
+  await expect(optiuni(page)).toHaveText(['Construcția 1', 'Ventilator']);
+  await expect(page.locator('#at-m-lista li')).toHaveCount(7);
+  await expect(verificare(page)).toHaveText(BINE);
+  // aceeași piesă pe un rând: știfturile, două; celelalte, câte una
+  expect((await randuri(page)).map(([, n]) => n).sort()).toEqual([1, 1, 1, 1, 1, 2]);
+  // din editorul ventilatorului: Ø48, cu 4 urechi la carcasă, apoi „Fă-l în model”: o construcție nouă, cu grinda de 9
+  await page.locator('#at-vedere-mod [data-v="piesa"]').click();
+  await page.locator('#at-tipuri [data-fila="propulsie"]').click();
+  await page.locator('#at-galerie [data-piesa="ventilator"]').click();
+  await page.locator('#at-ve-repede [data-v="48"]').click();
+  await page.locator('#at-ve-piesa [data-v="carcasa"]').click();
+  await page.locator('#at-ve-urechi [data-v="4"]').click();
+  await page.locator('#at-ve-model').click();
+  await expect(page.locator('#at-vedere-mod [data-v="model"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(optiuni(page)).toHaveText(['Construcția 1', 'Ventilator', 'Ventilator 2']);
+  await expect(page.locator('#at-toast')).toHaveText('„Ventilator 2” e în model.');
+  await expect(page.locator('#at-m-lista li')).toHaveCount(7);
+  await expect(verificare(page)).toHaveText(BINE);
+  await expect(page.locator('#at-cg-fel')).toHaveValue('ventilator');
+  await expect(page.locator('#at-cg-diametru')).toHaveValue('48');
+  await expect(page.locator('#at-cg-urechi')).toHaveValue('4');
+  await expect(text(page)).toHaveText('Grinda are 9 găuri, axul 3 știfturi; rotorul stă pe ax, în mijlocul carcasei. 7 piese.');
+  // ținută: carcasa cu 4 urechi, rotorul de Ø48, prinse de piese ale aceleiași construcții
+  const t = await tinut(page), c = t.constructii!.find((x) => x.id === t.activa)!;
+  expect(c.nume).toBe('Ventilator 2');
+  const def = (piesa: string) => c.model.find((m) => (m.def as { piesa?: string }).piesa === piesa)!.def as Record<string, unknown>;
+  expect([def('carcasa').diametru, def('carcasa').urechi, def('rotor').diametru]).toEqual([48, 4, 48]);
 });

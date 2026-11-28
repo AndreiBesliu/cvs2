@@ -1782,7 +1782,8 @@ var Atelier3D = (function () {
           : `<div class="at-rand"><span class="mic">Urechile:</span>${seg("at-ve-urechi", [["2", "Două"], ["4", "Patru"]], String(p.urechi))}</div>`}
         <p class="mic" id="at-ve-info">${textVentilator(p)}</p>
         <div class="at-rand"><button class="btn" type="button" id="at-ve-fa">Fă ventilatorul</button><span class="mic">${tr("pune în listă rotorul și carcasa")}</span></div>
-        <label class="bifa"><input type="checkbox" id="at-ve-trusa" ${trusaVentilator ? "checked" : ""}> Și trusa: grinda de sub carcasă, axul, o jumătate de bucșă și știfturile</label>`;
+        <label class="bifa"><input type="checkbox" id="at-ve-trusa" ${trusaVentilator ? "checked" : ""}> Și trusa: grinda de sub carcasă, axul, o jumătate de bucșă și știfturile</label>
+        <div class="at-rand"><button class="btn" type="button" id="at-ve-model">Fă-l în model</button><span class="mic">${tr("o construcție nouă, cu trusa prinsă: grinda, știfturile, carcasa, axul, bucșa și rotorul")}</span></div>`;
       const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; plaja = null; f2(b.dataset.v!); editor(); schimbat(); }; };
       alege("#at-ve-piesa", v => { p.piesa = v; });
       alege("#at-ve-repede", v => { p.diametru = +v; });
@@ -1798,6 +1799,7 @@ var Atelier3D = (function () {
       campElice("#at-ve-pas", p, "pas", 2, 0.3, 1.5, cote);
       campElice("#at-ve-lat", p, "latime", 0, 15, 60, cote);
       $("#at-ve-fa").onclick = adaugaVentilator;
+      $("#at-ve-model").onclick = faVentilatorInModel;
       $("#at-ve-trusa").onchange = ev => { trusaVentilator = (ev.target as HTMLInputElement).checked; };
     } else if (t === "suport") {
       const p = stare.suport;
@@ -2295,7 +2297,8 @@ var Atelier3D = (function () {
   // --- construcțiile gata (ADR 0284, 3.Ci): felul ales și valorile fiecăruia țin de fereastra deschisă (nu se țin minte)
   type ValoriGata = Record<string, number | string>;
   const gata: { fel: string; deschis: boolean; valori: Record<string, ValoriGata> } = { fel: "sasiu", deschis: false, valori: {
-    sasiu: { lung: 8, lat: 6, roata: 30.4 }, angrenaje: { raport: "1:3" }, macara: { inalt: 4, brat: 9, unghi: 45 }, barca: { lung: 10, lat: 6, diametru: 32, palete: 3 } } };
+    sasiu: { lung: 8, lat: 6, roata: 30.4 }, angrenaje: { raport: "1:3" }, macara: { inalt: 4, brat: 9, unghi: 45 }, barca: { lung: 10, lat: 6, diametru: 32, palete: 3 },
+    ventilator: { diametru: 40, palete: 7, urechi: 2 } } };
   /** Câmpurile fiecărei construcții gata: [cheia, eticheta, minim, maxim] (numere întregi) sau [cheia, eticheta, alegerile];
    *  o alegere fără nume e un diametru, scris „Ø” și numărul, cu virgula limbii. */
   const CAMPURI_GATA: Record<string, readonly (readonly [string, string, number, number] | readonly [string, string, readonly (readonly [string, string])[]])[]> = {
@@ -2303,6 +2306,7 @@ var Atelier3D = (function () {
     angrenaje: [["raport", "Raportul", [["1:1", "1 : 1"], ["1:3", "1 : 3"], ["1:5", "1 : 5"], ["1:9", "1 : 9"], ["1:15", "1 : 15"], ["1:25", "1 : 25"]]]],
     macara: [["inalt", "Stâlpul (cărămizi)", 2, 8], ["brat", "Brațul (găuri)", 5, 15], ["unghi", "Unghiul brațului (°)", 0, 80]],
     barca: [["lung", "Lungimea (știfturi)", 8, 16], ["lat", "Lățimea", [["4", "4 știfturi"], ["6", "6 știfturi"], ["8", "8 știfturi"]]], ["diametru", "Elicea (mm)", 24, 48], ["palete", "Palete", 3, 5]],
+    ventilator: [["diametru", "Diametrul în carcasă (mm)", 24, 120], ["palete", "Palete", 3, 12], ["urechi", "Urechile", [["2", "Două"], ["4", "Patru"]]]],
   };
   /** Construcția gata aleasă, din motor, cu valorile de acum. */
   function constructiaGata() {
@@ -2317,6 +2321,7 @@ var Atelier3D = (function () {
       : g.fel === "angrenaje" ? (c.raport === 1 ? tr("Axul de ieșire se rotește la fel de repede ca cel de intrare, în sens opus.")
         : tr`Axul de ieșire se rotește de ${c.raport} ori mai încet decât cel de intrare (${c.trepte === 1 ? tr("o treaptă") : tr("două trepte")}).`)
       : g.fel === "macara" ? tr`Pivotul, la ${fmt(c.pivot!)} mm de masă; vârful brațului, la ${fmt(c.varf!)} mm înălțime și ${fmt(c.raza!)} mm în față.`
+      : g.fel === "ventilator" ? tr`Grinda are ${c.gauri} găuri, axul ${c.axul} știfturi; rotorul stă pe ax, în mijlocul carcasei.`
       : tr`Axul elicei are ${c.axul} știfturi; elicea stă în spatele pupei.`;
     return `<p class="mic" id="at-cg-text">${text} ${piese}.</p>${g.avert.map(a => `<p class="avert" data-avert-gata>${a}</p>`).join("")}`;
   }
@@ -2651,7 +2656,7 @@ var Atelier3D = (function () {
         <summary>Construcții gata</summary>
         <p class="mic">Pornești de la o construcție făcută din piesele atelierului, cu mărimile tale: se deschide ca o construcție nouă, cu piesele prinse între ele.</p>
         <div class="at-rand"><label class="mic" for="at-cg-fel">Felul</label>
-          <select id="at-cg-fel">${[["sasiu", "Șasiu cu patru roți"], ["angrenaje", "Cutie de angrenaje"], ["macara", "Braț de macara"], ["barca", "Barcă cu elice"]].map(([f, t]) => `<option value="${f}"${f === gata.fel ? " selected" : ""}>${t}</option>`).join("")}</select></div>
+          <select id="at-cg-fel">${[["sasiu", "Șasiu cu patru roți"], ["angrenaje", "Cutie de angrenaje"], ["macara", "Braț de macara"], ["barca", "Barcă cu elice"], ["ventilator", "Ventilator"]].map(([f, t]) => `<option value="${f}"${f === gata.fel ? " selected" : ""}>${t}</option>`).join("")}</select></div>
         <div class="at-campuri" id="at-cg-campuri">${campuriGata}</div>
         <div id="at-cg-info" aria-live="polite">${gata.deschis ? infoGata() : ""}</div>
         <div class="at-rand"><button class="btn" type="button" id="at-cg-fa">Fă construcția</button></div>
@@ -3208,6 +3213,16 @@ var Atelier3D = (function () {
     }
     salveaza(); randeazaLista();
     toast(tr`${n} × ventilatorul (rotorul și carcasa) în listă.`);
+  }
+  function faVentilatorInModel() {
+    // ventilatorul în „Modelul” (ADR 0341, 3.Cn): construcția gata „Ventilator”, cu valorile din editor (o construcție nouă,
+    // cu trusa prinsă: grinda, știfturile, carcasa, axul, bucșa și rotorul pe același ax)
+    laZi();
+    const p = stare.ventilator as unknown as Record<string, number | string>;
+    gata.fel = "ventilator";
+    gata.valori.ventilator = Object.fromEntries(["diametru", "palete", "joc", "pas", "latime", "sens", "gaura", "inel", "urechi"].filter(k => p[k] !== undefined).map(k => [k, p[k]!]));
+    faConstructiaGata();
+    alegeVedere("model");
   }
   function adaugaPerecheElice() {
     // aceeași elice, o dată pe dreapta și o dată pe stânga (pentru două motoare care se rotesc invers), câte bucăți sunt cerute

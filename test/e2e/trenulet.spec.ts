@@ -1023,7 +1023,7 @@ test('în engleză (ADR 0165): căutarea, „Se prinde cu”, vederea „Modelul
   // motorului, numele construcției noi și verificarea ei
   await c.locator('#at-cg > summary').click();
   await expect(c.locator('#at-cg > summary')).toHaveText('Ready-made builds');
-  await expect(c.locator('#at-cg-fel option')).toHaveText(['Four-wheel chassis', 'Gearbox', 'Crane arm', 'Boat with a propeller']);
+  await expect(c.locator('#at-cg-fel option')).toHaveText(['Four-wheel chassis', 'Gearbox', 'Crane arm', 'Boat with a propeller', 'Fan']);
   await expect(c.locator('#at-cg-campuri label')).toHaveText([/^Length \(studs\)/, /^Width \(studs\)/, /^Wheels/]);
   await expect(c.locator('#at-cg-roata option')).toHaveText(['Ø30.4', 'Ø43.2', 'Ø56']);
   await expect(c.locator('#at-cg-text')).toHaveText('Between the axles: 48 mm; between the wheels on an axle: 74.2 mm. 13 pieces.');
@@ -1040,7 +1040,8 @@ test('în engleză (ADR 0165): căutarea, „Se prinde cu”, vederea „Modelul
   await expect(c.locator('#at-m-verificare')).toHaveText('Check: no piece floats and none goes into another. All the pieces hold together.');
   for (const [fel, textul] of [['angrenaje', 'The output axle turns 3 times slower than the input one (one stage). 13 pieces.'],
     ['macara', 'The pivot, 37.8 mm above the table; the tip of the arm, 83.1 mm high and 45.3 mm forward. 10 pieces.'],
-    ['barca', 'The propeller axle is 3 studs long; the propeller sits behind the stern. 6 pieces.']] as const) {
+    ['barca', 'The propeller axle is 3 studs long; the propeller sits behind the stern. 6 pieces.'],
+    ['ventilator', 'The beam has 7 holes, the axle 3 studs; the rotor sits on the axle, in the middle of the housing. 7 pieces.']] as const) {
     await c.locator('#at-cg-fel').selectOption(fel);
     await expect(c.locator('#at-cg-text')).toHaveText(textul);
     expect(await romanaRamasa(page, 'Păstrat la repornire'), `construcțiile gata: ${fel}`).toEqual([]);
