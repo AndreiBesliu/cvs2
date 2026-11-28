@@ -157,12 +157,12 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 
 - **A optzeci și una unire (28.11, ~15:00):** 16.A↑g-1…g-3, valorile frezei pe material și calculatorul avansului
   (`47559857` = relieful + `cb446b9d`, PR-ul #84; ADR 0305); completul combinat 46141776092 și al liniei 46141657991,
-  verzi. Documentele lui `main` aduse în `61fcd394`. Totalul 967,5 / 1 000 kB. Lotul 74, după lotul 73. Nicio linie n-are
+  verzi. Documentele lui `main` aduse în `61fcd394`. Totalul 967,5 / 1 000 kB. Lotul 73, cu relieful, după lotul 72. Nicio linie n-are
   felie pornită.
 
 - **A optzecea unire (28.11, ~14:45):** relieful, 18.1↑f, g, g-2, g-3, i, h-1…h-8 (`b414cfe6`, din `a8dbc75b`, PR-ul #81;
   ADR 0321–0323), refăcută peste f-5; completul liniei 46137909881 și al unirii 46141598350, verzi. Documentele lui `main`
-  aduse în `674178c1`. Lotul 73, după lotul 72. Frezele g (`cb446b9d`) sunt peste el pe `unire-2811h` (`47559857`), cu
+  aduse în `674178c1`. Lotul 73, cu frezele g, după lotul 72. Frezele g (`cb446b9d`) sunt peste el pe `unire-2811h` (`47559857`), cu
   completul combinat 46141776092 în lucru.
 
 - **A șaptezeci și noua unire (28.11, ~13:45):** 16.A↑f-5, silueta desenată în „Frezele mele” (`6d593c2a`, din `f5bcb2b9`,
@@ -220,7 +220,7 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   `2c74dc2d`, PR-ul #80): lotul 69 (`1e818f88`), pe test de la 28.11, ~03:25 (completul pe `main` 46087138726,
   verde; proba de fum, bună). 18.1↑j (`385f792d`): lotul 70 (`f0d031e7`), pe test de la 28.11, ~12:30 (completul pe `main` 46130228060,
   verde; proba de fum, bună). 3.Cn (`e1b2d6e6`): lotul 71 (`b3b5d811`), pe test de la 28.11, ~13:57 (completul pe `main` 46135640519,
-  verde; proba de fum, bună). 16.A↑f-5 (`6d593c2a`): lotul 72 (`f08f817b`), în drum. Relieful (`b414cfe6`): lotul 73, după el. Frezele g (`47559857`): lotul 74.
+  verde; proba de fum, bună). 16.A↑f-5 (`6d593c2a`): lotul 72 (`f08f817b`), în drum. Relieful (`b414cfe6`) și frezele g (`47559857`), cu nota frezelor: lotul 73, împreună, după el.
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte

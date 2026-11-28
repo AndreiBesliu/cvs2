@@ -2205,7 +2205,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   combinat: 46141776092, verde, și rapidul ei, verde; completul liniei pe `cb446b9d` (46141657991, a doua încercare),
   verde (unit 11 098 / 0, 12 sărite pe Linux; e2e 1 052 / 1 052; funcțiile pe emulatoare 142 / 142; paginile 62 / 62).
   Totalul 967,5 / 1 000 kB (rămân 32,5), pornirea 112,1 kB (plafonul 125), `/admin` 138,3 / 200, contul 30,3 / 32.
-  Pe test pleacă după relief (lotul 74). **Alegerile din ADR 0305, cu recomandarea aplicată, la owner:** valorile pe
+  Pe test pleacă împreună cu relieful (lotul 73). **Alegerile din ADR 0305, cu recomandarea aplicată, la owner:** valorile pe
   material stau în fiecare freză (nu o bibliotecă de materiale a aplicației); potrivirea după cuvintele etichetei foii;
   calculatorul doar scrie turația și avansul; CSV-ul poartă doar setul implicit. Linia frezelor n-are altă felie pornită
   (d, calibrarea, vine după placa 4). **La owner:** de încercat seturile pe material (o foaie cu eticheta „MDF”) și
