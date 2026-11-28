@@ -5,8 +5,10 @@
  *
  * Pe hârtie: o linie la distanța φ (|φ| ≤ P / 2) de cea mai apropiată creastă se sprijină pe creastă (panta dungii, 1, e mai
  * mare decât a bilei la r ≤ 0,5, R / √(R² − r²) · r ≤ 0,354), deci CL = −1 − (R − √(R² − φ²)): −1 pe creastă, −1,0858 pe vale.
- * Câmpul conservativ e o margine de sus (ADR 0310 §4): pe o celulă de calcul de latură h, maximul ei e la cel mult h · √2 de
- * punctul ales, deci surplusul e cel mult urcarea(P / 2 + h√2) − urcarea(P / 2).
+ * Câmpul conservativ e o margine de sus (ADR 0310 §4). Grila de calcul (h = 1/16 mm) e aliniată cu a reliefului, deci creasta
+ * cade pe o latură de celulă de calcul: celula de lângă ea, spre linie, are maximul −1 și stă la φ − h de linie. Cota liniei e
+ * deci −1 − urcarea(max(0, φ − h)), iar surplusul, cel mult urcarea(P / 2) − urcarea(P / 2 − h) (urcarea e convexă); celulele de
+ * pe pantă coboară cu h la fiecare celulă, mai mult decât urcă bila pe h (cel mult 0,354 · h), deci nu dau mai mult.
  *
  * - **Aliniat** (0° sau 90°, pasul un număr întreg de celule): fiecare linie trece printr-un centru de celulă, deci φ e 0 sau
  *   P / 2, iar suprafața tăiată se repetă exact cu perioada imaginii (sau cu cel mai mic multiplu comun cu pasul): media ei pe o
@@ -24,8 +26,8 @@ import { grila, pasi, relief, T } from './ajutor-relief-finisare.ts';
 
 const C = 0.5, P = 1, R = 1.5, NX = 20, NY = 100;
 const urcare = (r: number): number => R - Math.sqrt(R * R - r * r);
-/** Surplusul cel mai mare al câmpului conservativ peste CL-ul exact, pe hârtie (vezi capul fișierului). */
-const SURPLUS = urcare(P / 2 + CELULA_CALCUL * Math.SQRT2) - urcare(P / 2) + 1e-6;
+/** Surplusul cel mai mare al câmpului conservativ peste CL-ul exact, pe hârtie (vezi capul fișierului; plus rotunjirea Float32). */
+const SURPLUS = urcare(P / 2) - urcare(P / 2 - CELULA_CALCUL) + 1e-6;
 
 type Finisata = { readonly treceri: PunctO[][]; readonly linii: Map<number, number[]>; readonly pas: number };
 
@@ -77,8 +79,9 @@ function liniiDeMijloc(f: Finisata): [number, number[]][] {
   return [...f.linii].map(([k, zs]) => [k / 1e6, zs] as [number, number[]]).filter(([l]) => l > R + C && l < NY * C - R - C);
 }
 
-test('pe hârtie: surplusul câmpului conservativ, la celula de calcul de 1/16 mm, sub 0,035 mm', () => {
-  assert.ok(SURPLUS > 0.034 && SURPLUS < 0.035, `${SURPLUS}`);
+test('pe hârtie: surplusul câmpului conservativ, la celula de calcul de 1/16 mm: 0,0206 mm', () => {
+  assert.ok(Math.abs(SURPLUS - 1e-6 - (Math.sqrt(1.5 ** 2 - 0.4375 ** 2) - Math.sqrt(2))) < 1e-12, `${SURPLUS}`);
+  assert.ok(SURPLUS > 0.0205 && SURPLUS < 0.0207, `${SURPLUS}`);
   assert.ok(Math.abs(urcare(0.5) - (1.5 - Math.sqrt(2))) < 1e-12);
 });
 

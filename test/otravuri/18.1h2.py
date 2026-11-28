@@ -25,7 +25,7 @@ o('B04', RF, "    const b = bmin + (k + 0.5) * s, px = b * vx, py = b * vy;", " 
   'liniile nealiniate mai rare decât pasul spus (cu 2 %): bătăile au altă perioadă')
 o('B05', RF, "  if (f.fel === 'bila') return f.raza - Math.sqrt(Math.max(0, f.raza * f.raza - r * r));",
   "  if (f.fel === 'bila') return f.raza - Math.sqrt(Math.max(0, f.raza * f.raza - 0.8 * r * r));", 'batai',
-  'urcarea bilei prea mică: linia de pe vale coboară sub CL-ul de pe hârtie')
+  'urcarea bilei prea mică: liniile de lângă vale stau mai sus decât pe hârtie, peste surplusul câmpului')
 
 
 # ---- Seturile ----
