@@ -3,7 +3,8 @@
 **Starea:** propus pe 28.11.2026, în sesiunea cloud a liniei frezelor (ramura `wip/16.A-freze-g`, din vârful lui 16.A↑f-5), la
 cuvântul owner-ului transmis de sesiunea principală pe 28.11: „Porneste sesiunile, pune-le sa continue cu ce aveau la rand”,
 cu „Apoi g (valorile pe material), tot cu recomandările acolo unde sunt întrebări”. Întrebările de la capăt merg la owner
-grupat; linia merge mai departe cu recomandările, ca la ADR 0303 și 0304. **Completează:** ADR 0300 §1 („mai târziu și seturi
+grupat; linia merge mai departe cu recomandările, ca la ADR 0303 și 0304. **Făcut:** g-1, g-2 și g-3 pe 28.11 (mai jos,
+„Implementarea”). **Completează:** ADR 0300 §1 („mai târziu și seturi
 pe material (§11, felia g)”), §2 (numărul de tăișuri, „calculatorul avansului”, felia g) și §11 (felia 16.A↑g); ADR 0210 §1
 (materialul foii: „Biblioteca de materiale (esența, avansurile) vine mai târziu, cu câmpul ei”).
 
@@ -117,3 +118,32 @@ Fără nimic în pornire (fereastra și modelul sunt la cerere); totalul, ~+3 kB
 4. **CSV-ul:**
    - **a (recomandat):** doar setul implicit; seturile merg în JSON și rămân la un import CSV;
    - b: un rând în plus pe set (coloana `material`), după rândul frezei.
+
+## Implementarea (16.A↑g-1, g-2, g-3)
+
+Pe 28.11, pe `wip/16.A-freze-g` (din vârful lui 16.A↑f-5), cu recomandările aplicate (1a, 2a, 3a, 4a):
+
+- **g-1, modelul și editorul.** `src/model/freza.ts`: câmpul `materiale` (`SetMaterial`, `CAMPURI_SET`), `problemaMateriale`
+  (motivul, setul și câmpul primei greșeli: `materiale-multe`, `material-gol`, `material-caractere`, `material-lung`,
+  `material-folosit`, apoi marginile valorilor), `cuvinteMaterial` (NFD fără semnele diacritice, fără majuscule, despărțite
+  de orice nu e literă sau cifră), `setPentru` și `valoriPeMaterial`. Dublat înseamnă aceleași cuvinte, în orice ordine
+  („alb mdf” e „MDF alb”). **Plafonul e 16, nu 20:** cu cea mai mare freză desenată (200 de puncte, nota și grupul la
+  margine), 20 de seturi la margine ajung la ~8 160 de octeți din cei 8 192 ai contului (`OCTETI_FREZA`); cu 16, ~7 440.
+  O înlocuire la import pune freza adusă peste cea din bibliotecă (`cuFreza`, ca până acum), deci un CSV, care nu poartă
+  seturile, i le lasă; un JSON cu seturi le pune pe ale lui. În editor (`src/app/MaterialeFreza.tsx`), grupul „Valorile pe
+  material”: un set nou pornește de la valorile de lucru de acum, cu focusul pe material; „✕” îl scoate; greșeala sub
+  seturi, „Setul N, câmpul: motivul”, cu câmpul marcat; sugestiile câmpului sunt materialele celorlalte freze. Fișa are
+  tabelul seturilor.
+- **g-2, în proiect.** Tăierea (`PanouProprietati.tsx`) și fereastra exportului (`ExportConectat.tsx`: frezele rândurilor,
+  ale reliefului și biblioteca întreagă a notei) văd frezele prin `valoriPeMaterial`, cu materialul foii active; nota „Cu
+  valorile pentru „MDF”, materialul foii.” stă sub rândul „Freza” din Tăierea și sub freza la zi din fișa operației
+  (`FrezaOferita.set`). O freză cu altă copie decât setul (materialul schimbat după alegere) are nota bibliotecii, nu nota
+  setului. Documentul nu se schimbă (v32).
+- **g-3, calculatorul.** `src/model/calculatorAvans.ts` (pur; `MARGINI_FZ` 2 mm, `MARGINI_VC` 2 000 m/min), în editor
+  sub valorile de lucru și în fiecare set (`CalculatorAvans`), strâns la început.
+- **Probele:** `test/unit/freza.materiale.test.ts` (10), `test/unit/calculatorAvans.test.ts` (3, valorile socotite de mână),
+  `test/e2e/freze.materiale.spec.ts` (6, cu fontul lat la 1280, 390, 360, 320 px), `test/e2e/freze.material.proiect.spec.ts`
+  (2: programul cu turația, avansul și plonjarea setului; fără potrivire; materialul schimbat după alegere),
+  `test/e2e/freze.calculator.spec.ts` (1).
+- **Limita, spusă:** o piesă pusă pe două foi cu materiale diferite are o singură copie a frezei (operațiile sunt ale
+  piesei); cu „Toate foile”, nota bibliotecii se socotește cu materialul foii active.

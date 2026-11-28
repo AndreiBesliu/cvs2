@@ -2353,6 +2353,10 @@
       "ro": "Biblioteca extensiilor, refăcută: datele și semnul",
       "en": "The extension library, redone: the data and the icon"
     },
+    "6fb89bb58bc89398": {
+      "ro": "Valorile frezei pe material în „Frezele mele”",
+      "en": "Bit values per material in “My bits”"
+    },
     "6fd31b2b41912e6a": {
       "ro": "Instanța de test și fișa plăcii 1",
       "en": "The test instance and the plate 1 file"
@@ -3349,6 +3353,10 @@
       "ro": "**Rezultatul pe grupuri: întâi ce e de văzut, apoi fișierele, timpul și simularea** (fără mașină; ADR 0290, „Implementarea 28.8↑f-2”). Fișa Rezultatul are „De văzut înainte de tăiere” (doar cu avertismente), „Fișierele” (cu dopurile și „Deschide în Mașina”), „Rezumatul jobului” și „Simularea”, fiecare cu titlul lui; în listă, rândul Rezultatului spune timpul estimat și câte avertismente are, cu un punct. **Probele:** 1 e2e nouă, 1 mutată pe h4; rapidul local 10 123 / 0. **Otrăvurile:** `28.8f2.py`, 7 / 7 (e2e).",
       "en": "**The Result in groups: first what to check, then the files, the time and the simulation** (no machine; ADR 0290, “Implementarea 28.8↑f-2”). The Result card has “Check before cutting” (only with warnings), “Files” (with the plugs and “Open in Machine”), “Job summary” and “Simulation”, each with its title; in the list, the Result row gives the estimated time and how many warnings it has, with a dot. **Tests:** 1 new e2e, 1 moved to h4; the local fast tier 10,123 / 0. **Poisons:** `28.8f2.py`, 7 / 7 (e2e)."
     },
+    "a1314bdb0d6ed7e0": {
+      "ro": "**Valorile frezei pe material în „Frezele mele”** (fără mașină; ADR 0305 §1–§2, „Implementarea”; propus pe 28.11 cu patru întrebări, mers cu recomandările 1a–4a; pe `wip/16.A-freze-g`, din vârful lui 16.A↑f-5, la „Apoi g (valorile pe material), tot cu recomandările acolo unde sunt întrebări”, transmis de sesiunea principală). Pe fiecare freză, cel mult 16 seturi, fiecare cu materialul și cele cinci valori de lucru; un set se potrivește cu eticheta foii când toate cuvintele lui sunt în ea (fără majuscule și diacritice), cel mai lung câștigă. În editor, „Un set pe material” (pornit de la valorile de acum), „✕”, greșeala pe setul și câmpul ei; în fișă, tabelul seturilor. JSON-ul le poartă; un CSV, nu, iar importat peste o freză cu seturi, i le lasă. Plafonul de 16 (nu 20, cum era în ADR) vine din cont: cu cea mai mare freză desenată, 20 de seturi la margine ajungeau la ~8 160 din 8 192 de octeți.",
+      "en": "**Bit values per material in “My bits”** (no machine; ADR 0305 §1–§2, “Implementation”; proposed on 28.11 with four questions, carried on with recommendations 1a–4a; on `wip/16.A-freze-g`, from the tip of 16.A↑f-5, at “Then g (the values per material), again with the recommendations where there are questions”, passed on by the main session). On each bit, at most 16 sets, each with the material and the five working values; a set matches the sheet’s label when all its words are in it (ignoring capitals and accents), the longest wins. In the editor, “A set for a material” (starting from the current values), “✕”, the error on its set and field; on the card, the table of sets. JSON carries them; CSV does not, and imported over a bit with sets, it leaves them. The limit of 16 (not 20, as in the ADR) comes from the account: with the largest drawn bit, 20 sets at their limits reached ~8,160 of 8,192 bytes."
+    },
     "a17680231b9f3053": {
       "ro": "Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B",
       "en": "The test instance (Firestore export confirmed by the owner, then hosting only) and the plate 1 file, with programs A and B"
@@ -3745,6 +3753,10 @@
       "ro": "3.Tq (elicea)",
       "en": "3.Tq (the propeller)"
     },
+    "b476f7e59a259b94": {
+      "ro": "Setul materialului foii, în proiect",
+      "en": "The sheet material’s set, in the project"
+    },
     "b4f2ae0ab84496c5": {
       "ro": "Buzunarul, adus din etapa 5",
       "en": "The pocket, brought forward from stage 5"
@@ -3961,6 +3973,10 @@
       "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",
       "en": "Tabs as a Z(s) modifier, ported with the 88 checks on paper; the tab top measured from the bottom of the material (`docs/PORTARE.md` §3.1)"
     },
+    "bdeb66e249d31a65": {
+      "ro": "Calculatorul avansului",
+      "en": "The feed calculator"
+    },
     "bdf91ff4474e1bba": {
       "ro": "Textul, adus din etapa 7",
       "en": "Text, brought forward from stage 7"
@@ -4052,6 +4068,10 @@
     "c1c67c8e9871a34e": {
       "ro": "Ieșirea din foaie (cerința owner-ului de la încercarea prototipului, `BRIEF.md` §16.3): avertismentul în bara de jos, niciodată pe pânză; exportul cere confirmare când discul frezei trece de marginea foii, iar confirmarea se scrie în antet; oracolul independent refuză tăierea în afara foii fără declarație",
       "en": "Leaving the sheet (the owner's requirement from trying the prototype, `BRIEF.md` §16.3): the warning in the bottom bar, never on the canvas; the export asks for confirmation when the cutter disc crosses the sheet edge, and the confirmation is written in the header; the independent oracle refuses cutting outside the sheet without a declaration"
+    },
+    "c1db4b1c54f6d212": {
+      "ro": "**Calculatorul avansului** (ADR 0305 §4): strâns sub valorile de lucru și în fiecare set; din avansul pe dinte și, la alegere, viteza de așchiere, scrie turația (Vc · 1000 / (π · D), la 10 rot/min) și avansul (n · z · fz, la 1 mm/min); fără tăișuri sau cu un rezultat în afara marginilor, motivul, fără să scrie. Probele întâi, pentru toată felia g: unitare 13 (cu valorile socotite de mână), e2e 9 (cu fontul lat la 1280, 390, 360, 320 px). Otrăvurile, în lucru (36). Nimic pe server; programul fără seturi, octet cu octet. Pornirea neschimbată (112,1 kB; cu ușa și cu Atelierul 117,9 / 125), totalul 951,1 → 953,8 / 1 000.",
+      "en": "**The feed calculator** (ADR 0305 §4): folded under the working values and in each set; from the chip load and, optionally, the cutting speed, it fills in the spindle speed (Vc · 1000 / (π · D), to 10 rpm) and the feed (n · z · fz, to 1 mm/min); without flutes or with a result outside the limits, the reason, without filling in. Tests first, for the whole slice g: 13 unit tests (with the values worked out by hand), 9 e2e (with the wide font at 1280, 390, 360, 320 px). Mutations in progress (36). Nothing on the server; the program without sets, byte for byte. Startup unchanged (112.1 kB; with the door and the Workshop 117.9 / 125), the total 951.1 → 953.8 / 1,000."
     },
     "c20c3eee1be88de6": {
       "ro": "Toleranțele cotelor",
@@ -4476,6 +4496,10 @@
     "d806e0586b324952": {
       "ro": "Supracursa și pe tăieturile cât foaia, la alegere",
       "en": "Overtravel on cuts as deep as the sheet too, by choice"
+    },
+    "d87f3d92a4d38d3b": {
+      "ro": "**Setul materialului foii, în proiect** (ADR 0305 §3): Tăierea și fereastra exportului (listele „Din frezele mele”, frezele reliefului, nota bibliotecii, „Ia valorile noi”) dau valorile setului potrivit materialului foii active, cu nota „Cu valorile pentru „MDF”, materialul foii.”; un material schimbat după alegere nu schimbă copia: nota bibliotecii arată diferența. Documentul rămâne v32. Proba e2e citește programul: turația, avansul și plonjarea setului.",
+      "en": "**The sheet material’s set, in the project** (ADR 0305 §3): the Cutting section and the export window (the “From my bits” lists, the relief bits, the library note, “Take the new values”) give the values of the set matching the active sheet’s material, with the note “With the values for “MDF”, the sheet’s material.”; a material changed after the choice does not change the copy: the library note shows the difference. The document stays v32. The e2e test reads the program: the set’s spindle speed, feed and plunge."
     },
     "d8a85daca8dd5464": {
       "ro": "**Planșele: comenzile foii pe pânză** (fără mașină; ADR 0210 §1, „Felia 11.1↑c”; cererea owner-ului din 24.11, în sesiunea principală: „vreau ca plansele sa aiba controalele din meniu si sub ele, si sa apara doar la hover sau cand sunt selectate”; ramura `wip/11.1c-controale-foi`, lucrată în sesiunea principală din cloud). Sub fiecare foaie de pe pânză, la stânga, un rând cu cele șapte comenzi ale meniului „⋯” al foii, ca iconițe, în ordinea lui: numele, mărimea și materialul; „Așază pe foi…”; cele două duplicări; cele două mutări; ștergerea. Rândul foii active se vede mereu; al unei foi vecine, doar cu mausul pe ea, pe fâșia de sub ea sau pe rând (și cu focusul în el); la atingere, doar al foii active. Comenzile trec prin același registru ca meniul: un refuz e stins, cu motivul în sfat, iar ștergerea unei foi cu piese întreabă întâi, în rând. Meniul din listă rămâne. Rândurile nu se arată într-un proiect doar de citit, sub fereastra Mașina sau Imprimanta și cât ține un mod al pânzei. Documentul nu se schimbă. **Probele:** 4 unitare (foaia de sub cursor, fâșia pe hârtie, locul rândului, ordinea), 6 e2e (`controale-foi.spec.ts`), manualul în ambele limbi. **Otrăvurile** (`test/otravuri/11.1c.py`, C01–C10 și E01–E20): 30 / 30 la prima rulare. **Mărimea** (cu 14.C↑d): pornirea 109,9 → 110,0 kB (plafonul 120), totalul 806,1 → 806,9 / 900.",
