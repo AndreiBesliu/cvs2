@@ -50,6 +50,11 @@ export type FinisareExport = {
   /** Podeaua: adâncimea cea mai mare la care coboară finisarea. */
   readonly adancime: number;
   readonly pas: number;
+  /**
+   * Câte straturi ascunse au reliefurile operației în instanța ei (ADR 0320, felia 18.1↑j): nu intră în compus, deci nici în
+   * program; fișa o spune. Lipsă = niciunul.
+   */
+  readonly ascunse?: number;
 };
 
 /** Rândul unei operații a reliefului, ca text (valorile se citesc abia la verificare și la Exportă). */

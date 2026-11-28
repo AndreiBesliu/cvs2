@@ -825,6 +825,8 @@ export const roExport = {
   'export.relief.z.plan.nota': 'sub fața plăcii',
   'export.relief.plan-zero': 'Sub față (mm)',
   'export.relief.plan-zero.titlu': 'Cât de jos stă planul zero al reliefului sub fața plăcii, de la 0 la 1 000 mm; ce ar ieși deasupra feței se taie la față.',
+  'export.relief.ascunse.unu': 'Relieful are un strat ascuns: nu intră în program. Arată-l din panoul Proprietăți ca să se taie.',
+  'export.relief.ascunse': 'Relieful are {n} straturi ascunse: nu intră în program. Arată-le din panoul Proprietăți ca să se taie.',
   'export.relief.perechi.fin': 'Comune cu degroșarea aceluiași relief: se schimbă pe amândouă.',
   'export.relief.perechi.deg': 'Comune cu finisarea aceluiași relief: se schimbă pe amândouă.',
   'export.relief.adancime': 'Adâncimea (mm)',

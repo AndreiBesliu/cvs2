@@ -5,7 +5,8 @@
  * cuantizate, deci e exact ce se salvează și ce se taie (§2).
  */
 import { compune, type Mod } from '../relief/compunere.ts';
-import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA } from '../relief/grila.ts';
+import { asezaPeGrila } from '../relief/asezare.ts';
+import { CELULA_MAXIMA, CELULA_MINIMA, LATURA_MAXIMA, LATURA_MM_MAXIMA, type Grila } from '../relief/grila.ts';
 import { dalaDinOcteti, type Dala } from '../relief/dala.ts';
 import { dale as numarDale, LATURA_DALA } from '../relief/grila.ts';
 import { hartaDinText, type Harta } from '../relief/harta.ts';
@@ -38,6 +39,12 @@ export type CerereRelief =
      * orizontală), sau pixelii pe țol (celula = 25,4 / dpi), cât lățimea nu e scrisă.
      */
     readonly scara: { readonly latimeMm: number } | { readonly dpi: number };
+    /**
+     * Stratul nou pe un relief ales (ADR 0320, felia 18.1↑j): grila lui. Imaginea, la scara ei (un pixel = lățimea / pixelii,
+     * ori 25,4 / dpi), se așază centrat pe ea (`asezaPeGrila`): golul în afara imaginii, ce iese din relief tăiat. Lipsă: un
+     * relief nou, cu o celulă pe pixel.
+     */
+    readonly pe?: Grila;
   }
   | {
     readonly tip: 'desen';
@@ -153,9 +160,16 @@ async function dinImagine(c: Extract<CerereRelief, { tip: 'din-imagine' }>): Pro
   if ('ok' in px) return px;
   const nx = px.latime, ny = px.inaltime;
   if (nx > LATURA_MAXIMA || ny > LATURA_MAXIMA) return { ok: false, cod: 'prea-mare', detaliu: `${nx} × ${ny}` };
-  const celula = celulaDinScara(c.scara, nx, ny);
-  if (celula === 'celula') return { ok: false, cod: 'celula' };
+  const pixel = celulaDinScara(c.scara, nx, ny);
+  if (pixel === 'celula') return { ok: false, cod: 'celula' };
   const valori = reliefDinPixeli(px.rgba, nx, ny, c.optiuni);
+  // Pe un relief ales, grila e a lui, iar imaginea se așază pe ea; altfel, grila e a imaginii.
+  const g: Grila = c.pe ?? { nx, ny, celula: pixel };
+  return dinValori(c.pe ? asezaPeGrila(valori, nx, ny, pixel, g) : valori, g);
+}
+
+/** Stratul din valorile pe grila `g`, citit înapoi din dalele cuantizate: harta, octeții, Z-ul și desenul. */
+async function dinValori(valori: ArrayLike<number>, { nx, ny, celula }: Grila): Promise<ReliefDinImagine | RefuzRelief> {
   const st = await stratDinGrila(valori, nx, ny);
   // Ce se arată e citit din dalele cuantizate (ADR 0310 §2), ca un relief cu acest singur strat: compusul pornește de la 0,
   // deci celulele goale ale stratului (pixelii transparenți) sunt planul zero (ADR 0311 §7), cum se vor tăia.

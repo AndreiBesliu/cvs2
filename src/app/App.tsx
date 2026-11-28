@@ -854,7 +854,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     return () => { clearTimeout(ceas); };
   }, [mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'imagineImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'imaginiNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'imagineImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'imaginiNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'nodEditat' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -1530,6 +1530,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
               onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}
+              onStraturi={(f, nod) => aplicaDinPanou('document.forma', { formaEditata: () => f, nodEditat: () => nod })}
               onStoc={(s) => aplicaDinPanou('foaie.stoc', { stocNou: () => s })}
               onRol={(r) => aplicaDinPanou('document.rol', { rolNou: () => r })}
               onOperatii={(noi) => aplicaDinPanou('document.aplica-operatii', { operatiiNoi: () => noi })}
@@ -1784,6 +1785,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           puneImaginea={(imagine) => {
             const c = context();
             return ruleaza(registru, 'foaie.imagini', { ...c, imaginiNoi: () => cuImagineaNoua(c, imagine) });
+          }}
+          // Un strat nou pe relieful ales (ADR 0320, felia 18.1↑j), prin `document.forma`, ca straturile din panou; relieful ales
+          // îl află dialogul (adus la cerere), din document și selecție.
+          straturi={{
+            doc, alese: selectieValida, indexFoaie: indexActiva,
+            stare: (f, nod) => stare(registru, 'document.forma', context({ formaEditata: () => f, nodEditat: () => nod })),
+            ruleaza: (f, nod) => ruleaza(registru, 'document.forma', context({ formaEditata: () => f, nodEditat: () => nod })),
           }}
           onInchide={() => { setCoadaImport(null); }}
         />

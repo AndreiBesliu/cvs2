@@ -6,6 +6,7 @@ import { esteCaleDeschisa, type Document, type Operatie } from '../model/documen
 import type { ElementLume } from '../model/lume.ts';
 import { chenarElement, conturElement, esteContur } from '../model/forme.ts';
 import { cheiePas, creastaPePlan, ordinePasi } from '../model/finisare.ts';
+import { straturiAscunse } from '../model/straturiRelief.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import type { FinisareExport } from '../ui/FisaFinisare.tsx';
 import { DialogExport, type ToateFoileExport } from '../ui/DialogExport.tsx';
@@ -284,7 +285,10 @@ function randuriFoii(
     const fin: { readonly unghi?: number; readonly nealiniat?: true; readonly margine?: 'trece'; readonly planZero?: number } | undefined = deg ? o.degrosare : o.finisare;
     const perechi = piesa.operatii.filter((x) => peRelief(x) && x !== o && x.noduri.some((n) => o.noduri.includes(n))).map((x) => `${piesa.id}/${x.id}`);
     const celula = e && e.forma.tip === 'relief' ? e.forma.celula * Math.sqrt(Math.abs(e.matrice.a * e.matrice.d - e.matrice.b * e.matrice.c)) : undefined;
+    // Straturile ascunse ale reliefurilor operației (ADR 0320): nu se taie, iar fișa o spune.
+    const ascunse = o.noduri.reduce((n, nod) => ((x) => n + (x && x.forma.tip === 'relief' ? straturiAscunse(x.forma) : 0))(dupaIdLume.get(`${inst}/${nod}`)), 0);
     return {
+      ...(ascunse > 0 ? { ascunse } : {}),
       cheie: `${piesa.id}/${o.id}`,
       fel: deg ? 'degrosare' : 'finisare', perechi, ...(celula !== undefined ? { celula } : {}),
       ...(deg ? { adaos: o.degrosare?.adaos ?? 0 } : {}),
