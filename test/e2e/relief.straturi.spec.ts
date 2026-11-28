@@ -3,7 +3,7 @@ import { asezaPeGrila } from '../../src/relief/asezare.ts';
 import { reliefDinPixeli } from '../../src/relief/imagine.ts';
 import { stratDinGrila } from '../../src/relief/strat.ts';
 import { documentSalvat } from './ajutor-document.ts';
-import { importaRelief } from './ajutor-relief.ts';
+import { importaRelief, rolFinisare } from './ajutor-relief.ts';
 
 /**
  * Straturile reliefului în aplicația construită (ADR 0320, felia 18.1↑j): relieful din imagine (64 × 32 mm, jumătatea stângă
@@ -22,7 +22,7 @@ const straturiSalvate = async (page: Page, rev: number): Promise<Strat[]> => {
 };
 
 /** Imaginea albă de 16 × 16 px, adusă prin „Importă…” (fișierul `patrat.png`). */
-async function importaPatrat(page: Page): Promise<void> {
+async function importaPatrat(page: Page, ca: 'strat' | 'piesa' = 'piesa'): Promise<void> {
   await page.evaluate(async () => {
     const c = new OffscreenCanvas(16, 16), g = c.getContext('2d');
     if (!g) throw new Error('fără 2D');
@@ -38,6 +38,13 @@ async function importaPatrat(page: Page): Promise<void> {
   });
   await expect(page.getByRole('dialog')).toHaveCount(1);
   await page.getByTestId('import-rezultat').locator('label').filter({ has: page.locator('[data-camp="import-rezultat-relief"]') }).click();
+  if (ca === 'piesa') return;
+  await page.locator('[data-camp="relief-unde-strat"]').check();
+  await page.locator('[data-camp="relief-latime"]').fill('16');
+  await page.locator('[data-camp="relief-latime"]').press('Enter');
+  await expect(page.getByTestId('relief-grila')).toContainText('Pe „jumatati”');
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 }
 
 test('o imagine ca strat nou pe relieful ales; ochiul, modul, anularea și ordinea, cu Z-ul compusului și documentul', async ({ page }) => {
@@ -96,4 +103,23 @@ test('o imagine ca strat nou pe relieful ales; ochiul, modul, anularea și ordin
   await expect(page.locator('[data-strat="s1"] [data-buton="strat-sterge"]')).toBeDisabled();
   await expect(z).toHaveText('de la 0.00 la 5.00 mm');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('un strat ascuns: fișa finisării din fereastra exportului spune că nu intră în program; arătat, nota pleacă', async ({ page }) => {
+  await page.goto('/');
+  await importaRelief(page);
+  await importaPatrat(page, 'strat');
+  await page.locator('[data-strat="s2"] [data-buton="strat-ochi"]').click();
+  await expect(page.locator('[data-strat="s2"]')).toHaveAttribute('data-vizibil', 'false');
+  await rolFinisare(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const fin = page.locator('[data-fisa="op"][data-fel="finisare"]');
+  await expect(fin.locator('[data-nota="relief-ascunse"]')).toHaveText(
+    'Relieful are un strat ascuns: nu intră în program. Arată-l din panoul Proprietăți ca să se taie.');
+  await page.keyboard.press('Escape');
+  await expect(fin).toHaveCount(0);
+  await page.locator('[data-strat="s2"] [data-buton="strat-ochi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(fin).toHaveCount(1);
+  await expect(fin.locator('[data-nota="relief-ascunse"]')).toHaveCount(0);
 });

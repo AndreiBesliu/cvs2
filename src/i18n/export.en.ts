@@ -796,6 +796,8 @@ export const enExport = {
   'export.relief.z.plan.nota': 'below the board face',
   'export.relief.plan-zero': 'Below the face (mm)',
   'export.relief.plan-zero.titlu': 'How far the zero plane of the relief sits below the board face, from 0 to 1,000 mm; whatever would stick out above the face is cut at the face.',
+  'export.relief.ascunse.unu': 'The relief has one hidden layer: it is not in the program. Show it from the Properties panel to cut it.',
+  'export.relief.ascunse': 'The relief has {n} hidden layers: they are not in the program. Show them from the Properties panel to cut them.',
   'export.relief.perechi.fin': 'Shared with the roughing of the same relief: they change on both.',
   'export.relief.perechi.deg': 'Shared with the finishing of the same relief: they change on both.',
   'export.relief.adancime': 'Depth (mm)',
