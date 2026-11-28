@@ -17529,3 +17529,25 @@ ce aveau la rand”): după f-5, „g (valorile pe material), tot cu recomandăr
   lui f-5).
 - **Documentele:** ADR 0305 (și indexul), fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul
   otrăvurilor.
+
+## 2026-11-28 — Sesiunea principală în cloud: a șaptezeci și noua unire (16.A↑f-5) (Model: Claude Opus 5.5)
+
+**Started:** 13:43 (raportul liniei frezelor, sub „unește ce se poate”).
+**Completed:** 13:52.
+
+- **Unirea:** 16.A↑f-5, din `f5bcb2b9` (PR-ul #83), în `6d593c2a`, pe `unire-2811g`; arborele are codul lui `f5bcb2b9`
+  (completul 46134777174, rapidul 46134760638, verzi).
+- **Relieful:** unirea din `a8dbc75b`, refăcută peste f-5 (`unire-2811f`, `b414cfe6`; ciocnirile în DEVLOG și într-un bloc
+  din traducerile roadmap-ului, ambele părți păstrate); completul vechi (46140534129) oprit, cel nou 46141598350.
+- **Documentele:** decizia, starea Stare, nota principală, indexul liniilor.
+
+## 2026-11-28 — Sesiunea principală în cloud: a optzecea unire (relieful: 18.1↑f, g, g-2, g-3, i, h) (Model: Claude Opus 5.5)
+
+**Started:** 13:33 (raportul liniei reliefului, sub „unește ce se poate”).
+**Completed:** 14:48.
+
+- **Unirea:** din `a8dbc75b` (PR-ul #81, cu `1943be15`), întâi pe `cf84bcc7` (peste `57ea24f5`), refăcută peste 16.A↑f-5
+  în `b414cfe6`; completul liniei 46137909881 și al unirii 46141598350, verzi; documentele lui `main` aduse în `674178c1`.
+- **Frezele g:** puse peste relief pe `unire-2811h` (`47559857`), cu completul combinat 46141776092.
+- **Pe test:** lotul 71 (`b3b5d811`, 3.Cn) de la 13:57, proba de fum bună; lotul 72 (`f08f817b`, f-5) în drum.
+- **Documentele:** decizia, Stare, nota principală, indexul liniilor.

@@ -153,10 +153,20 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 28.11.2026, la prânz (după a șaptezeci și opta unire din cloud)
+## Starea pe 28.11.2026, după-amiaza (după a optzecea unire din cloud)
+
+- **A optzecea unire (28.11, ~14:45):** relieful, 18.1↑f, g, g-2, g-3, i, h-1…h-8 (`b414cfe6`, din `a8dbc75b`, PR-ul #81;
+  ADR 0321–0323), refăcută peste f-5; completul liniei 46137909881 și al unirii 46141598350, verzi. Documentele lui `main`
+  aduse în `674178c1`. Lotul 73, după lotul 72. Frezele g (`cb446b9d`) sunt peste el pe `unire-2811h` (`47559857`), cu
+  completul combinat 46141776092 în lucru.
+
+- **A șaptezeci și noua unire (28.11, ~13:45):** 16.A↑f-5, silueta desenată în „Frezele mele” (`6d593c2a`, din `f5bcb2b9`,
+  PR-ul #83; ADR 0304 §5); arborele, al lui `f5bcb2b9`, cu completul 46134777174 verde. Lotul 72, după lotul 71. Relieful
+  (18.1↑f, g, i, h, g-2, g-3, din `a8dbc75b`) e pe `unire-2811f` (`b414cfe6`, refăcută peste f-5), cu completul 46141598350
+  în lucru; frezele au g-1…g-3 la porți. Unită la ~14:45 (a optzecea unire).
 
 - **A șaptezeci și opta unire (28.11, ~12:25):** 3.Cn, ventilatorul în „Modelul” (`e1b2d6e6`, din `240259ee`, PR-ul #82;
-  ADR 0341, Easy 3Draw 18.51.0); arborele, al lui `240259ee`, cu completul 46129637888 verde. Lotul 71, după lotul 70.
+  ADR 0341, Easy 3Draw 18.51.0); arborele, al lui `240259ee`, cu completul 46129637888 verde. Lotul 71, pe test de la ~13:57.
   Linia atelierului n-are altă felie pornită.
 
 - **A șaptezeci și șaptea unire (28.11, ~11:20):** 18.1↑j, straturile reliefului (`385f792d`, din `936ee2d3`, PR-ul #81);
@@ -204,7 +214,8 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   documente) și 3.Ay, Escape oriunde ar fi focusul, în dialogurile rămase (unită pe 28.11 la ~02:15, din
   `2c74dc2d`, PR-ul #80): lotul 69 (`1e818f88`), pe test de la 28.11, ~03:25 (completul pe `main` 46087138726,
   verde; proba de fum, bună). 18.1↑j (`385f792d`): lotul 70 (`f0d031e7`), pe test de la 28.11, ~12:30 (completul pe `main` 46130228060,
-  verde; proba de fum, bună). 3.Cn (`e1b2d6e6`): lotul 71 (`b3b5d811`), în drum.
+  verde; proba de fum, bună). 3.Cn (`e1b2d6e6`): lotul 71 (`b3b5d811`), pe test de la 28.11, ~13:57 (completul pe `main` 46135640519,
+  verde; proba de fum, bună). 16.A↑f-5 (`6d593c2a`): lotul 72 (`f08f817b`), în drum. Relieful (`b414cfe6`): lotul 73, după el.
   **Schema:** documentul e v32; un câmp nou ia v33.
 - **Limita de folosire (27.11, ~16:20):** owner-ul a spus că ne apropiem de limita săptămânală (94 %, se resetează
   sâmbătă, 28.11, la 10:00; comună tuturor sesiunilor): „vezi sa nu se piarda din progresul pe care il fac celelalte
