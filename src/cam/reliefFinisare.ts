@@ -465,6 +465,9 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
   type LinieZ = { readonly ip: number; readonly x: Float64Array; readonly y: Float64Array; readonly z: Float64Array };
   const toate: LinieZ[] = [];
   let pasFolosit = o.pasLateral, puncte = 0;
+  // Întâi liniile fiecărui relief, cu verificările lor și numărul punctelor, înaintea oricărei cote (felia 18.1↑h-3): un refuz
+  // al punctelor vine fără calcul (la 4000², cotele singure iau minute).
+  const liniiPe: { readonly ip: number; readonly p: Pregatit; readonly linii: readonly Linie[] }[] = [];
   for (const [ip, p] of pregatite.entries()) {
     const l = linii(p, o, so.degrosare && o.margine !== 'trece' ? so.cota.raza : 0);
     // Aliniate, liniile trec prin centrele celulelor: o celulă mai lată decât freza lasă dungi netăiate între ele.
@@ -482,17 +485,57 @@ function treceriRelief(o: ParametriFinisare, so: Socotire): RezultatFinisare {
         ? `pasul lateral, mărit la o celulă a reliefului: ${mm} mm (liniile aliniate nu pot sta mai des; creasta iese mai mare decât cea cerută)`
         : `pasul lateral, rotunjit în jos la ${k} ${k === 1 ? 'celulă' : 'celule'} ale reliefului: ${mm} mm`);
     }
-    for (const [k, pts] of l.linii.entries()) {
-      const n = pts.length / 2;
-      puncte += n;
-      if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
-      const x = new Float64Array(n), y = new Float64Array(n), z = new Float64Array(n);
-      const { a, b, c, d, e, f } = p.r.m;
-      for (let i = 0; i < n; i++) {
-        // Zigzag: liniile impare se parcurg invers.
-        const q = k % 2 === 0 ? i : n - 1 - i, lx = pts[2 * q]!, ly = pts[2 * q + 1]!;
-        x[i] = a * lx + c * ly + e; y[i] = b * lx + d * ly + f;
+    for (const pts of l.linii) puncte += pts.length / 2;
+    if (puncte > PUNCTE_FINISARE_MAXIM) return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte pe trecere: mărește pasul lateral` };
+    liniiPe.push({ ip, p, linii: l.linii });
+  }
+  /** Linia `k` a reliefului `ip`, în lume, în ordinea parcurgerii (zigzag: liniile impare, invers). */
+  const inLume = (p: Pregatit, k: number, pts: Linie): { readonly x: Float64Array; readonly y: Float64Array } => {
+    const n = pts.length / 2, x = new Float64Array(n), y = new Float64Array(n);
+    const { a, b, c, d, e, f } = p.r.m;
+    for (let i = 0; i < n; i++) {
+      const q = k % 2 === 0 ? i : n - 1 - i, lx = pts[2 * q]!, ly = pts[2 * q + 1]!;
+      x[i] = a * lx + c * ly + e; y[i] = b * lx + d * ly + f;
+    }
+    return { x, y };
+  };
+  // Numărul trecerilor are o margine de jos din orice punct al traseului: cea mai adâncă cotă e cel mult vârful lui. Punctul ales
+  // e, pe fiecare relief, cel mai apropiat de cea mai joasă celulă, cu vârful socotit exact ca mai jos (aceleași segmente, în
+  // aceeași ordine). Peste plafon chiar cu marginea de jos, refuzul de după cote vine acum; altfel, verdictul rămâne după ele.
+  if (puncte * Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) > PUNCTE_FINISARE_MAXIM) {
+    // Indiciul piramidei (celula maximului de la segmentul dinainte) se pune la loc: calculul de mai jos pornește ca înainte.
+    const ultime = pregatite.map((p) => p.ultima);
+    let sus = Infinity;
+    for (const { ip, p, linii: ls } of liniiPe) {
+      let jos = Infinity, cx = NaN, cy = NaN;
+      for (let j = 0; j < p.r.ny; j++) {
+        for (let i = 0; i < p.r.nx; i++) {
+          const v = p.r.z[j * p.r.nx + i]!;
+          if (v < jos) { jos = v; cx = (i + 0.5) * p.r.celula; cy = (j + 0.5) * p.r.celula; }
+        }
       }
+      let bk = -1, bq = -1, bd = Infinity;
+      for (const [k, pts] of ls.entries()) {
+        for (let q = 0; 2 * q < pts.length; q++) {
+          const d = (pts[2 * q]! - cx) ** 2 + (pts[2 * q + 1]! - cy) ** 2;
+          if (d < bd) { bd = d; bk = k; bq = q; }
+        }
+      }
+      if (bk < 0) continue;
+      const pts = ls[bk]!, n = pts.length / 2, { x, y } = inLume(p, bk, pts), i = bk % 2 === 0 ? bq : n - 1 - bq;
+      const v = n === 1 ? cota(ip, x[i]!, y[i]!, x[i]!, y[i]!)
+        : Math.max(i > 0 ? cota(ip, x[i - 1]!, y[i - 1]!, x[i]!, y[i]!) : -Infinity, i + 1 < n ? cota(ip, x[i]!, y[i]!, x[i + 1]!, y[i + 1]!) : -Infinity);
+      sus = Math.min(sus, v);
+    }
+    for (const [k, p] of pregatite.entries()) p.ultima = ultime[k]!;
+    // Toleranța mai largă decât a numărului de mai jos (1e-9): o rotunjire a vârfului nu trece marginea peste el.
+    if (sus < -EPS && puncte * Math.ceil(-sus / o.pas - 1e-6) > PUNCTE_FINISARE_MAXIM) {
+      return { ok: false, motiv: `${nume} ar avea peste ${PUNCTE_FINISARE_MAXIM} de puncte: mărește pasul lateral sau pasul pe trecere` };
+    }
+  }
+  for (const { ip, p, linii: ls } of liniiPe) {
+    for (const [k, pts] of ls.entries()) {
+      const n = pts.length / 2, { x, y } = inLume(p, k, pts), z = new Float64Array(n);
       const seg = new Float64Array(Math.max(0, n - 1));
       for (let i = 0; i + 1 < n; i++) seg[i] = cota(ip, x[i]!, y[i]!, x[i + 1]!, y[i + 1]!);
       for (let i = 0; i < n; i++) {
