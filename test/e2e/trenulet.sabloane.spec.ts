@@ -151,6 +151,9 @@ test('ventilatorul (ADR 0341): din panou, Ø40 și grinda de 7; din editor, „F
   await expect(verificare(page)).toHaveText(BINE);
   // aceeași piesă pe un rând: știfturile, două; celelalte, câte una
   expect((await randuri(page)).map(([, n]) => n).sort()).toEqual([1, 1, 1, 1, 1, 2]);
+  // panoul lăsat pe șasiu: butonul din editor își alege singur felul (otrava A08 din 3.Cn)
+  await page.locator('#at-cg-fel').selectOption('sasiu');
+  await expect(page.locator('#at-cg-fel')).toHaveValue('sasiu');
   // din editorul ventilatorului: Ø48, cu 4 urechi la carcasă, apoi „Fă-l în model”: o construcție nouă, cu grinda de 9
   await page.locator('#at-vedere-mod [data-v="piesa"]').click();
   await page.locator('#at-tipuri [data-fila="propulsie"]').click();
