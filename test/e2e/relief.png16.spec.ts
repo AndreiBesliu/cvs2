@@ -40,6 +40,14 @@ test('relieful spre PNG pe 16 biți și înapoi: Z-ul și celula din fișier, ap
   await expect(page.locator('[data-camp="relief-z-fisier"]')).toBeChecked();
   await expect(page.getByTestId('relief-grila')).toHaveText('Grila: 64 × 32 celule de 1 mm (o celulă pe pixel); relieful are 64 × 32 mm.');
   await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 0 la 5 mm.');
+  // Cu Z-ul din fișier, înălțimea ferestrei nu contează; fără el, da.
+  await page.locator('[data-camp="relief-inaltime"]').fill('2');
+  await page.locator('[data-camp="relief-inaltime"]').press('Enter');
+  await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 0 la 5 mm.');
+  await page.locator('[data-camp="relief-z-fisier"]').uncheck();
+  await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 0 la 2 mm.');
+  await page.locator('[data-camp="relief-z-fisier"]').check();
+  await expect(page.getByTestId('relief-z')).toHaveText('Înălțimile: de la 0 la 5 mm.');
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('prop-relief')).toBeVisible();
