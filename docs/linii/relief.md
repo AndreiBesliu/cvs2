@@ -303,3 +303,11 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   - **Oracolul materialului (`materialSecventaO`), cu bila, pe o grilă aliniată cu liniile:** o coloană fix la raza bilei de o
     linie e atinsă doar pe ecuator, iar oracolul o ia sau nu după rotunjirea fiecărei mutări; deplasează grila judecății cu o
     fracțiune de celulă (ramura plată are paza la 1 µm, cea a bilei nu).
+- **28.11: 18.1↑h-1 gata pe ramură** (relieful la 4000², măsurătorile; ADR 0323, **propus**): sonda `scripts/masura-relief.ts`.
+  Tot ce ține de relief până la CAM e fluid la 4000² (sub 2,3 s, într-un fir); finisarea nu e: 118 s la pasul 0,5 și 2,2 GB.
+  **Codul feliei următoare (liniile pe workere, memoria pe benzi) așteaptă răspunsul owner-ului** la cele patru întrebări din
+  ADR 0323, plus măsurătoarea lui. Până atunci, linia poate face proba bătăilor (18.1↑h-2), care nu depinde de răspuns.
+- **De ținut minte, din 18.1↑h-1:**
+  - **Finisarea reliefului e 92 % cota segmentelor** (`distSegmentCutie` 70 %, `cotaSegment` 21 %): o optimizare care atinge
+    altceva nu mută timpul.
+  - **La celula de 0,1 mm, câmpul de calcul are 0,05** (`diviziune`): memoria crește cu (2 · N)², nu cu N².

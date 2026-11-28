@@ -17327,3 +17327,16 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/
 - **Fișa:** `docs/etape/placa-18.md`, partea a doua (materialul, pătratele, fișierele, tăierea, timpul, ce se măsoară).
 - **Documentele:** fișa etapei 3, nota liniei, traducerile. Fără cod de produs.
 
+## 2026-11-28 — 18.1↑h-1: relieful la 4000², măsurătorile (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (același cuvânt; 4000², următorul din ADR 0310 §8).
+**Started:** 28.11, 10:43, pe `wip/18.1-relief`, după 18.1↑i. **Completed:** 28.11, 11:05.
+
+- **Sonda:** `scripts/masura-relief.ts` (un relief sintetic de N², pe drumul aplicației: stratul, citirea, compunerea, desenul,
+  PNG-ul pe 16 biți, degroșarea, finisarea), cu timpul și memoria fiecăruia.
+- **Măsurat** (container, un fir): la 4000², tot ce ține de relief sub 2,3 s; degroșarea 27 s; finisarea 118 s la pasul 0,5 și
+  MĂSURA_03 la pasul 0,3, cu 2,2 GB. Profilul: 92 % în cota segmentelor.
+- **ADR 0323, propus:** sunt depășite două praguri „Se redeschide dacă” din ADR 0310; recomandarea e liniile pe workere și
+  memoria pe benzi, fără GPU, apoi măsurătoarea pe calculatorul owner-ului. Codul așteaptă răspunsul.
+- **Documentele:** fișa etapei 3, nota liniei, traducerile, indexul ADR. Fără cod de produs.
+
