@@ -1086,6 +1086,13 @@ at least as thick as the maximum thickness.
 
 Each change is one undo step, and undo puts the layer back exactly as it was.
 
+**The relief as a 16-bit image:** in the **Relief** section, **Export as a 16-bit image…** downloads the relief (the visible
+layers, composited) as a 16-bit grey PNG: 65,536 steps between the lowest and the highest cell, with Z and the cell written in
+the file, so the relief can go to another computer or another program. Brought back through “Import…” as a relief, the window
+offers **Z and cell from the file** (ticked by default): the relief comes back as it left, and exported again it gives exactly
+the same file. Any 16-bit PNG (from a 3D scanner or another program) is read on 16 bits, not 8; without Z in the file, the
+height and the base come from the window.
+
 **A new layer from an image:** with a relief selected, the “Relief from image” window also has **A new layer on “…”**, next to
 **A new part** (the default). The image is centred on the relief, at **Image width on the relief** (by default the relief's
 width): each cell takes the pixel its centre falls in, what falls outside the relief is cropped, and around the image the

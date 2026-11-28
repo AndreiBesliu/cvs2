@@ -1054,6 +1054,13 @@ unui strat nu schimbă nimic acolo. Fiecare strat are:
 
 Fiecare schimbare e un pas de anulare, iar anularea pune la loc stratul exact cum era.
 
+**Relieful ca imagine pe 16 biți:** în secțiunea **Relieful**, **Exportă ca imagine pe 16 biți…** descarcă relieful (straturile
+vizibile, compuse) ca PNG gri pe 16 biți: 65 536 de trepte între cea mai joasă și cea mai înaltă celulă, cu Z-ul și celula
+scrise în fișier, ca relieful să poată pleca pe alt calculator sau în alt program. Adus înapoi prin „Importă…” ca relief,
+fereastra oferă **Z-ul și celula din fișier** (bifată implicit): relieful revine cum a plecat, iar exportat din nou dă exact
+același fișier. Orice PNG pe 16 biți (de la un scaner 3D sau alt program) se citește pe 16 biți, nu pe 8; fără Z în fișier,
+înălțimea și baza vin din fereastră.
+
 **Un strat nou din imagine:** cu un relief ales, fereastra „Relief din imagine” are și **Un strat nou pe „…”**, lângă **O piesă
 nouă** (implicit). Imaginea stă centrată pe relief, la **Lățimea imaginii pe relief** (implicit cât relieful): fiecare celulă
 ia pixelul în care îi cade centrul, ce iese din relief se taie, iar în jurul imaginii stratul e gol. **Importă** îl pune
