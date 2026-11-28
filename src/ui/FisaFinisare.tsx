@@ -231,6 +231,10 @@ export function FisaFinisare({ fin, r, loc, total, c, greseli, gresite, ciocnit 
       <h3 tabIndex={-1}>{fin.descriere}</h3>
       {/* Felul, înaintea locului: degroșarea și finisarea aceluiași relief au același nume. */}
       <p className="dx-loc">{t(deg ? 'export.degrosare.lista' : 'export.finisare.lista')} · {t('export.fisa.loc', { n: loc + 1, total })}</p>
+      {/* Straturile ascunse nu se taie (ADR 0320): spus în fișă, ca omul să nu creadă că lipsesc din greșeală. */}
+      {fin.ascunse !== undefined && fin.ascunse > 0 && (
+        <p className="nota" data-nota="relief-ascunse">{fin.ascunse === 1 ? t('export.relief.ascunse.unu') : t('export.relief.ascunse', { n: fin.ascunse })}</p>
+      )}
       {GRUPURI_RELIEF[fin.fel].map((g) => grup(g, fin.cheie, corp(g), aici(g), desen(g)))}
     </section>
   );

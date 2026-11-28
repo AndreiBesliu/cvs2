@@ -1067,7 +1067,20 @@ height: there the relief is the zero plane. A fully transparent image, one large
 gives a cell outside its limits (0.001 to 100 mm, at most 10 m a side) is refused, with the reason.
 
 **In the panel:** with the part selected, the **Relief** section shows the size, the cell, the cells, the heights and the
-layers, top to bottom, each with its mode (in this slice, a relief has a single layer, “add”).
+**layers**, top to bottom, as in the composite. The relief is the sum of its layers, from the bottom up, each with its mode:
+**add**, **subtract**, **keep higher** (the higher of the layer and what is below it), **keep lower**, **replace** or
+**multiply**; an empty pixel of a layer changes nothing there. Each layer has:
+- the eye: a hidden layer is not in the relief, so it is not cut either (the export window says so on the relief's row);
+- the name (empty = shown by its id) and the mode;
+- **↑** / **↓**: higher or lower in the composite; **×**: deletes it (the last layer stays).
+
+Each change is one undo step, and undo puts the layer back exactly as it was.
+
+**A new layer from an image:** with a relief selected, the “Relief from image” window also has **A new layer on “…”**, next to
+**A new part** (the default). The image is centred on the relief, at **Image width on the relief** (by default the relief's
+width): each cell takes the pixel its centre falls in, what falls outside the relief is cropped, and around the image the
+layer is empty. **Import** puts it on top, in “add” mode, which you then change from the panel. A relief has at most 32
+layers.
 
 The relief is kept in the browser, next to the project, not in the document (the document keeps only its fingerprint), like
 the sheet images: on another computer or in another browser, the panel says the layers are missing. Whatever no kept version

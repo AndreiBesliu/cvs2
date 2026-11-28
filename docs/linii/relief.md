@@ -260,3 +260,18 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
     predicat de tip; `formaPeRand` e a rândurilor pe contur): o formă nouă care trebuie să ajungă pe relief intră întâi în
     `formaPeRandRelief`, în `FormaPeRelief` și în rândul reliefului, cu proba ei. Una nouă pe rândul exportului, dar nu pe
     relief, se oprește și în `bibliotecaRelief`.
+- **28.11: 18.1↑j gata pe ramură** (la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al owner-ului, prin
+  sesiunea principală): straturile reliefului, editabile în panou, și imaginea ca strat nou pe relieful ales (ADR 0320). Id-ul
+  din tabelul ADR 0310 (rândul „18.1↑e”) era luat de toroidală, deci felia e 18.1↑j, iar tabelul are o notă. Documentul
+  rămâne v32: **v33 nu e folosit**. Urmează, în ordinea din ADR 0310 §8: **18.1↑f** (litofania), **18.1↑g** (relieful ↔ gri pe
+  16 biți), **18.1↑h** (4000²), **18.1↑i** (litofania pe placa 18).
+- **De ținut minte, din 18.1↑j:**
+  - **Straturile se editează doar prin `src/model/straturiRelief.ts`** (pur) și `document.forma` cu `nodEditat`: nicio acțiune
+    nouă. Relieful din imagine e un element (`r1`) într-un grup, deci fără `nodEditat` panoul nu schimbă nimic (otrava J19).
+  - **Un strat nou pe un relief are grila reliefului**: cererea `din-imagine` primește `pe`, iar `asezaPeGrila`
+    (`src/relief/asezare.ts`) pune imaginea centrat, cel mai apropiat pixel, golul NaN în jur. Fără `pe`, relieful din imagine e
+    cel de până acum, octet cu octet.
+  - **Relieful ales se află în bucata importului** (`reliefAles`, în `ImportConectat`), nu în `App.tsx`: altfel modelul
+    straturilor ar intra în pornire.
+  - **Un strat ascuns e sărit peste tot** (compusul, desenul, modelul 3D, resursele exportului, CAM-ul); o funcție nouă care
+    citește straturile le sare la fel, iar proba ei pune un strat ascuns lipsă din resurse.

@@ -4529,6 +4529,10 @@
       "ro": "înainte să pornim primirea pe live",
       "en": "before we turn receiving on for live"
     },
+    "db249adfda411d56": {
+      "ro": "Straturile reliefului, editabile",
+      "en": "The relief layers, editable"
+    },
     "db398db7d9cd13df": {
       "ro": "Cotele: lanțul, linia de bază, „Cotează selecția”",
       "en": "Dimensions: chain, baseline, “Dimension selection”"
@@ -5077,6 +5081,10 @@
       "ro": "Roadmap, Documentație și Setări",
       "en": "Roadmap, Documentation and Settings"
     },
+    "f57042aaddac9ebc": {
+      "ro": "Straturile reliefului, editabile, și imaginea ca strat nou",
+      "en": "The relief layers, editable, and the image as a new layer"
+    },
     "f5a0f22b52f21ca7": {
       "ro": "Formele între cvs2 și plugin",
       "en": "Shapes between cvs2 and the plugin"
@@ -5088,6 +5096,10 @@
     "f60cf31387944b69": {
       "ro": "**Gata pe 09.11.** Anularea unei singure piese (ADR 0193): din placă sau din listă, cu confirmare, prin `EXCLUDE_OBJECT` scris doar de driver; piesa de acum așteaptă (retrimisă cel mult 2 minute), cu Renunță; imprimanta falsă învață anularea și refuzul piesei de acum",
       "en": "**Done on 09.11.** Cancelling a single part (ADR 0193): from the plate or the list, with a confirmation, through `EXCLUDE_OBJECT` written only by the driver; the current part waits (resent for at most 2 minutes), with Withdraw; the fake printer learns the cancelling and the refusal of the current part"
+    },
+    "f6625788f2953047": {
+      "ro": "**Straturile reliefului, editabile, și imaginea ca strat nou** (ADR 0320; ramura `wip/18.1-relief`; la cuvântul owner-ului, transmis de sesiunea principală: „Porneste sesiunile, pune-le sa continue cu ce aveau la rand”). Id-ul din tabelul ADR 0310 („18.1↑e”) era luat de toroidală, deci felia are 18.1↑j, iar tabelul e îndreptat. În panoul Proprietăți, fiecare strat cu ochiul, numele, modul, ↑ / ↓ și × (nu ultimul), prin `document.forma` cu `nodEditat`: un pas de anulare, cu hărțile la loc. Cu un relief ales, fereastra „Relief din imagine” are „Un strat nou pe „…””: imaginea centrată pe grila reliefului (`asezaPeGrila`, pe hârtie), implicit cât lățimea lui; relieful ales îl află dialogul, la cerere. Fișa finisării și a degroșării spune straturile ascunse. Programul: un strat ascuns, chiar lipsă din browser, dă exact programul fără el. Documentul rămâne v32 (v33 nefolosit). Otrăvurile: `18.1j.py`, 23 / 23 prinse (15 unitare, 8 e2e), martorul a scăpat; J16 și J20 scăpaseră la primul tur, iar proba e2e le cere acum. Pornirea +0,1 kB (112,1 / 125), totalul +2,0 kB (947,6 / 1 000).",
+      "en": "**The relief layers, editable, and the image as a new layer** (ADR 0320; branch `wip/18.1-relief`; at the owner's word, relayed by the principal session: “Porneste sesiunile, pune-le sa continue cu ce aveau la rand”). The id in the ADR 0310 table (“18.1↑e”) was taken by the toroidal cutter, so the slice is 18.1↑j, and the table is corrected. In the Properties panel, each layer with the eye, the name, the mode, ↑ / ↓ and × (not the last), through `document.forma` with `nodEditat`: one undo step, with the maps put back. With a relief selected, the “Relief from image” window has “A new layer on “…””: the image centred on the relief's grid (`asezaPeGrila`, on paper), by default as wide as the relief; the selected relief is found by the dialog, on demand. The finishing and roughing card states the hidden layers. The program: a hidden layer, even missing from the browser, gives exactly the program without it. The document stays v32 (v33 unused). The poisons: `18.1j.py`, 23 / 23 caught (15 unit, 8 e2e), the control escaped; J16 and J20 had escaped in the first round, and the e2e probe now requires them. Startup +0.1 kB (112.1 / 125), total +2.0 kB (947.6 / 1 000)."
     },
     "f69517a92ff2a4a3": {
       "ro": "Jog, zero XY / Z",

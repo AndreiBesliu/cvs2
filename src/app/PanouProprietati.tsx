@@ -24,6 +24,7 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { CampuriFinisare } from './CampuriFinisare.tsx';
 import { ImaginiFoii } from './ImaginiFoii.tsx';
+import { StraturiRelief } from './StraturiRelief.tsx';
 import { PanouCota } from './PanouCota.tsx';
 import { useStareCote } from '../ui/coteVedere.ts';
 import { useRoluriMele } from './roluriMele.ts';
@@ -84,6 +85,11 @@ type Props = {
    * lipsă: încă se calculează.
    */
   readonly desenRelief?: (cheie: string) => { readonly z: { readonly min: number; readonly max: number } | null } | null | undefined;
+  /**
+   * Straturile unui relief (ADR 0320, felia 18.1↑j): forma nouă a elementului `nod` al singurei instanțe alese (ochiul,
+   * numele, modul, ordinea, ștergerea), prin `document.forma`, un pas de anulare. Lipsă: straturile doar de citit.
+   */
+  readonly onStraturi?: (f: FormaRelief, nod: string) => RezultatActiune;
   /** „Calibrează” și „Trasează…” pe o imagine a foii (ADR 0272 §6, §7; felia 25.8↑b): modul pânzei. */
   readonly onModImagine?: (fel: 'calibrare' | 'zona', id: string) => void;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
@@ -218,6 +224,7 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
   onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini, onModImagine, desenRelief,
+  onStraturi,
 }: Props): ReactNode {
   const limba = useLimba();
   const butoane = taierea === 'butoane';
@@ -747,7 +754,7 @@ export function PanouProprietati({
           {piesa && instanta.texte && textIese(piesa, instanta.texte) && <p className="camp-motiv" data-testid="placuta-iese">{t('prop.placuta.iese')}</p>}
         </section>
       )}
-      {/* Relieful (ADR 0310 §7): mărimea, grila, Z-ul compusului și straturile, de sus în jos; în felia asta, doar de citit. */}
+      {/* Relieful (ADR 0310 §7): mărimea, grila, Z-ul compusului și straturile, de sus în jos, editabile (ADR 0320). */}
       {piesa && reliefuriNod(piesa.radacina).map(({ id, forma: f }) => {
         const d = desenRelief?.(cheieDesen(f));
         return (
@@ -761,13 +768,8 @@ export function PanouProprietati({
                 : d.z === null ? '—' : t('prop.relief.z.valoare', { min: mm(d.z.min), max: mm(d.z.max) }))}
             </dl>
             <p className="prop-grup">{t('prop.relief.straturi')}</p>
-            <ul className="prop-straturi" data-testid="prop-relief-straturi">
-              {[...f.straturi].reverse().map((st) => (
-                <li key={st.id} data-strat={st.id} data-vizibil={st.vizibil}>
-                  {st.nume ?? st.id}{' · '}{t(`prop.relief.mod.${st.mod}`)}{st.vizibil ? '' : ` · ${t('prop.relief.ascuns')}`}
-                </li>
-              ))}
-            </ul>
+            <StraturiRelief cheie={`${cheie}/${id}`} forma={f} dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})}
+              onSchimba={onStraturi ? (nou) => onStraturi(nou, id) : undefined} />
             {d === null && <p className="camp-motiv" data-testid="prop-relief-lipsa">{t('prop.relief.lipsa')}</p>}
           </section>
         );

@@ -17276,3 +17276,37 @@ pe `wip/16.A-freze-f5`, din `main` `09689d36`. **Completed:** 28.11.
 - **Otrăvurile** (`test/otravuri/16.A-f5.py`): 36 / 36 (22 pe model, 14 e2e); D14 scăpase și e prinsă de proba nouă.
 - **Mărimea:** pornirea 112,0 kB, neschimbată (cu ușa și cu Atelierul 117,8 / 125); totalul 945,6 → 949,2 / 1 000.
 - **Documentele:** ADR 0304, fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul otrăvurilor.
+
+## 2026-11-28 — 18.1↑j: straturile reliefului, editabile, și imaginea ca strat nou (Model: Claude Opus 5.5)
+
+**Prompt:** „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” (owner-ul, transmis liniei reliefului de sesiunea
+principală la 09:40: straturile și combinarea, cu un id liber și tabelul din ADR 0310 îndreptat). **Started:** 28.11, 09:45, pe
+`wip/18.1-relief`, din `main` `09689d36`. **Completed:** 28.11, 10:10.
+
+- **Editarea, pură:** `src/model/straturiRelief.ts` (ochiul, numele, modul, ordinea, ștergerea, stratul nou, câte sunt ascunse,
+  relieful ales), cu probele întâi (`relief.straturi.test.ts`).
+- **Panoul:** `src/app/StraturiRelief.tsx`, în secțiunea Relieful, prin `document.forma` cu `nodEditat` (un pas de anulare);
+  proba acțiunii (`relief.straturi.actiune.test.ts`) și a programului (`relief.straturi.program.test.ts`: un strat ascuns,
+  chiar lipsă din resurse, dă exact programul fără el; „scade” mută vârful compusului la √27, pe hârtie).
+- **Imaginea ca strat nou:** `asezaPeGrila` (`src/relief/asezare.ts`, pe hârtie), cererea `din-imagine` cu `pe`, alegerea
+  „Un strat nou pe „…”” în fereastra „Relief din imagine”; relieful ales, aflat în bucata importului.
+- **Exportul:** fișa finisării și a degroșării spune straturile ascunse.
+- **E2e:** `relief.straturi.spec.ts` (2 probe, cu amprenta stratului ca în Node); proba veche a reliefului citește stratul din
+  câmpurile lui.
+- **Otrăvurile** (`test/otravuri/18.1j.py`): 23 / 23 prinse, martorul a scăpat; J16 și J20 scăpaseră, iar proba e2e le cere
+  acum.
+- **Mărimea:** pornirea 112,0 → 112,1 kB (cu ușa 117,6, cu Atelierul 117,9 / 125), totalul 945,6 → 947,6 / 1 000.
+- **Documentele:** ADR 0320 (cu alegerile owner-ului, recomandarea aplicată), nota în tabelul ADR 0310 §8, manualul (ro, en),
+  fișa etapei 3, registrul otrăvurilor, nota liniei, traducerile. Documentul rămâne v32: v33 nefolosit.
+
+## 2026-11-28 — Sesiunea principală în cloud: a șaptezeci și șaptea unire (18.1↑j) (Model: Claude Opus 5.5)
+
+**Prompt:** raportul liniei reliefului despre 18.1↑j (pornită la „Porneste sesiunile, pune-le sa continue cu ce aveau la rand” al
+owner-ului); ordinul „unește ce se poate”
+**Started:** 28.11, 11:12. **Completed:** 28.11, 11:20.
+
+- **Unirea:** `wip/18.1-relief` (`936ee2d3`, PR-ul #81) în `main`, din `09689d36`; arborele, al lui `936ee2d3`. Completul
+  46124373639, verde: unit 11 069 / 0, e2e 1 035 / 1 035, funcțiile pe emulatoare 142 / 142, paginile 62 / 62; rapidul, verde.
+- **Pe test:** lotul 70, după completul de pe `main`.
+- **Documentele:** decizia și rândul de stare în `CLAUDE.md`; starea din `docs/linii/principala.md`; rândul reliefului din
+  `docs/linii/README.md`.

@@ -11,12 +11,13 @@ import {
 import { DialogImport } from '../ui/DialogImport.tsx';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
-import type { ImagineFoaie } from '../model/document.ts';
+import type { Document, FormaRelief, ImagineFoaie } from '../model/document.ts';
+import { reliefAles } from '../model/straturiRelief.ts';
 import { citeste as citesteImaginea, OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
 import { asezarePeImagine, numeFisierImagine, zonaInPixeli, type ZonaRelativa } from './modImagineCalcul.ts';
 import { utilizarea } from './utilizare.ts';
 import type { RezultatImagine } from '../ui/AlegereRezultat.tsx';
-import { FereastraRelief } from './FereastraRelief.tsx';
+import { FereastraRelief, type TintaStrat } from './FereastraRelief.tsx';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -81,6 +82,16 @@ type Props = {
    * scara ei și zona trasă pe ea; „Importă” pune vectorii exact peste ea.
    */
   readonly dinFoaie?: { readonly imagine: ImagineFoaie; readonly zona: ZonaRelativa | null };
+  /**
+   * Straturile reliefului ales (ADR 0320, felia 18.1↑j): documentul, selecția și foaia activă (relieful ales se află aici,
+   * `reliefAles`), cu starea și rularea lui `document.forma` pe elementul `nod`. Cu un relief ales, relieful din imagine poate fi
+   * și un strat nou al lui.
+   */
+  readonly straturi?: {
+    readonly doc: Document; readonly alese: readonly string[]; readonly indexFoaie: number;
+    readonly stare: (f: FormaRelief, nod: string) => RezultatActiune;
+    readonly ruleaza: (f: FormaRelief, nod: string) => RezultatActiune;
+  };
 };
 
 /**
@@ -99,7 +110,7 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, puneImaginea, onInchide, de, freza, dinFoaie }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, puneImaginea, onInchide, de, freza, dinFoaie, straturi }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   const [pastreazaBifat, setPastreazaBifat] = useState(pastreazaImaginea);
@@ -298,11 +309,16 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   // Relieful din imagine (ADR 0310 §7): fereastra lui, cu fișierul citit; nu din imaginea de pe foaie (ADR 0272 §7).
   if (rezultat === 'relief' && !dinFoaie && dialog.fisier && esteImagine(dialog.fisier.nume)) {
     const f = dialog.fisier;
+    const ales = straturi ? reliefAles(straturi.doc, straturi.alese, straturi.doc.foi[straturi.indexFoaie]) : null;
+    const tintaRelief: TintaStrat | null = ales && straturi ? {
+      nume: ales.nume, forma: ales.forma, stare: (x) => straturi.stare(x, ales.nod), adauga: (x) => straturi.ruleaza(x, ales.nod),
+    } : null;
     return (
       <FereastraRelief key={`${k}:${f.nume}`} nume={f.nume} octeti={f.octeti} onAlege={alegeRezultat}
         stareImporta={(p) => stareImporta(p, loc)} importa={(p) => importa(p, loc)} onImportat={urmatorul} onInchide={inchide}
         jurnal={(e) => { contextImport(f, ALEGERI, () => undefined).jurnal?.(e); }}
         {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
+        {...(tintaRelief ? { tinta: tintaRelief } : {})}
         {...(de === undefined ? {} : { de })} />
     );
   }
