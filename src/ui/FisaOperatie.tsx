@@ -225,10 +225,15 @@ export function FisaOperatie({ cheie, loc, total: totalFisa, c: ctx }: {
   };
   const nota = (unde: UndeFreza, origine: OrigineFreza | null): ReactNode => {
     const st = stareLa(unde);
+    // Setul pe material al frezei la zi (ADR 0305 §3): de ce turația nu e cea din fișa ei.
+    const set = st?.fel === 'la-zi' && origine ? bibliotecaToata?.find((x) => x.id === origine.biblioteca.id)?.set : undefined;
     return (
-      <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? (peToate ?? ((id: string) => cuAceeasiFreza(param, bibliotecaToata, id)))(st.freza.id) : 0}
-        oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate}
-        inapoi={st?.fel === 'stearsa' ? inapoi(o.cheie, unde) : undefined} />
+      <>
+        <NotaBiblioteca stare={st} origine={origine} peToate={st?.fel === 'schimbata' ? (peToate ?? ((id: string) => cuAceeasiFreza(param, bibliotecaToata, id)))(st.freza.id) : 0}
+          oprit={doarCitire} fmt={fmtFreza} onIa={(f) => { iaValorileNoi(o.cheie, unde, f); }} onIaToate={iaValorileNoiPeToate}
+          inapoi={st?.fel === 'stearsa' ? inapoi(o.cheie, unde) : undefined} />
+        {set !== undefined && <p className="nota" data-nota="freza-material">{t('export.freza.material', { set })}</p>}
+      </>
     );
   };
   const aici = (g: GrupExport): Greseala[] => greseli.filter(([, x]) => x === g).map(([m, , rep]) => ({

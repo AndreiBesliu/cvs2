@@ -69,6 +69,8 @@ export type OrigineFreza = {
 export type FrezaOferita = {
   readonly id: string; readonly nume: string; readonly scula: SculaOperatie & { readonly origine: OrigineFreza };
   readonly pas: number; readonly pasLateral: number;
+  /** Setul pe material ale cărui valori le are (ADR 0305 §3), potrivit materialului foii; lipsă: valorile de lucru ale frezei. */
+  readonly set?: string;
 };
 /** O freză a ferestrei, pentru numărul T (ADR 0114 §5): numărul, diametrul, forma și turația, dacă e știută. */
 export type FrezaRand = { readonly numar: number; readonly diametru: number; readonly forma?: SculaOperatie['forma']; readonly turatie?: number };

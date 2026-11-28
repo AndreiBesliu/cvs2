@@ -24,7 +24,7 @@ import { t } from '../i18n/t.ts';
 import { citesteFisierFreze, textFisierFreze, type MotivFisierFreze } from '../io/frezeFisier.ts';
 import {
   areCam, arePuncte, areRaza, areTreapta, areUnghi, areVarf, cheieNume, FELURI_FREZA, FREZE_PORNIRE, grupurileListei, inaltimeCon, MARGINI_FREZA, numeLiber, problemeFreza, type CampFreza, type FelFreza,
-  problemaPuncte, puncteDesenate, type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
+  problemaMateriale, problemaPuncte, puncteDesenate, type Freza, type FrezaFaraNume, type FrezaSalvata, type MotivFreza, type PoliticaImport, type ProblemeFreza,
 } from '../model/freza.ts';
 import { CATALOG_FREZE, GRUPURI_CATALOG, tolFreza, type FrezaCatalog } from '../model/catalogFreze.ts';
 import { aceeasiGeometrie } from '../model/dinCatalog.ts';
@@ -39,6 +39,7 @@ import { CHEIE_LOCALA, cheieCont, frezeMele, useFrezeMele, type ProblemeLista } 
 import { useSincronizare } from './frezeSincronizare.ts';
 import { cuFrezeleStandard, frezeleStandard, numePropus } from './frezeStandard.ts';
 import { EditorPuncte, PuncteFisa, type PunctText, type SursaSilueta } from './SiluetaDesenata.tsx';
+import { CalculatorAvans, EditorMateriale, etichetaSet, MaterialeFisa, seturiNumere, seturiText, type SetText } from './MaterialeFreza.tsx';
 import './freze.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -46,9 +47,10 @@ export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 /** Câmpurile editorului, ca text scris de om (felul și punctele siluetei desenate, separat). */
-type Ciorna = { readonly fel: FelFreza; readonly puncte: readonly PunctText[] } & { readonly [K in Exclude<CampFreza, 'puncte'>]: string };
+type Ciorna = { readonly fel: FelFreza; readonly puncte: readonly PunctText[]; readonly materiale: readonly SetText[] }
+  & { readonly [K in Exclude<CampFreza, 'puncte' | 'materiale'>]: string };
 type CampText = 'nume' | 'nota' | 'grup';
-const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText | 'puncte'>[] = [
+const CAMPURI_NUMERE: readonly Exclude<CampFreza, CampText | 'puncte' | 'materiale'>[] = [
   'diametru', 'unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri', 'numar', 'turatie', 'avans', 'plonjare', 'pas', 'pasLateral',
 ];
 const OPTIONALE: ReadonlySet<CampFreza> = new Set(['tais', 'taisuri', 'raza', 'treapta']);
@@ -104,6 +106,7 @@ function ciornaDin(f: Freza, ro: boolean, numeGol = false): Ciorna {
     taisuri: fara(f.taisuri, ro), numar: fara(f.numar, ro), turatie: fara(f.turatie, ro), avans: fara(f.avans, ro),
     plonjare: fara(f.plonjare, ro), pas: fara(f.pas, ro), pasLateral: fara(f.pasLateral, ro),
     puncte: (f.puncte ?? []).map(([r, h]): PunctText => [fara(r, ro), fara(h, ro)]),
+    materiale: seturiText(f.materiale, ro),
   };
 }
 
@@ -126,6 +129,8 @@ function frezaDin(c: Ciorna, ro: boolean): Freza {
     v['puncte'] = P;
     v['diametru'] = P.length > 0 ? 2 * P[P.length - 1]![0] : Number.NaN;
   }
+  // Seturile pe material (ADR 0305 §1): fără niciunul, câmpul pleacă (și de pe freza salvată, la care se pune peste).
+  v['materiale'] = c.materiale.length > 0 ? seturiNumere(c.materiale) : undefined;
   const f = v as FrezaFaraNume;
   return { ...f, nume: c.nume.trim() === '' ? numePropus(f, ro) : c.nume };
 }
@@ -614,7 +619,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     return () => { document.removeEventListener('keydown', asculta); };
   }, []);
 
-  const scrie = (k: Exclude<CampFreza, 'puncte'>) => (e: ChangeEvent<HTMLInputElement>): void => {
+  const scrie = (k: Exclude<CampFreza, 'puncte' | 'materiale'>) => (e: ChangeEvent<HTMLInputElement>): void => {
     const v = e.currentTarget.value;
     setCiorna((c) => (c ? { ...c, [k]: v } : c));
     setMesaj('');
@@ -634,6 +639,11 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
       case 'nota-lunga': return t('freze.motiv.nota-lunga', { max: MARGINI_FREZA.nota });
       case 'grup-lung': return t('freze.motiv.nume-lung', { max: MARGINI_FREZA.grup });
       case 'grup-caractere': return t('freze.motiv.nume-caractere');
+      case 'materiale-multe': return t('freze.motiv.materiale-multe', { max: MARGINI_FREZA.materiale });
+      case 'material-gol': return t('freze.motiv.material-gol');
+      case 'material-lung': return t('freze.motiv.nume-lung', { max: MARGINI_FREZA.material });
+      case 'material-caractere': return t('freze.motiv.nume-caractere');
+      case 'material-folosit': return t('freze.motiv.material-folosit');
       case 'puncte-putine': return t('freze.motiv.puncte.lipsa');
       case 'puncte-multe': return t('freze.motiv.puncte.multe', { max: PLAFON.puncteProfil });
       case 'puncte-inceput': return t('freze.motiv.puncte.inceput');
@@ -657,7 +667,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
         return t('freze.motiv.margini', { max: textNumar(MAXIM[k] ?? 0, ro) });
     }
   };
-  const camp = (k: Exclude<CampFreza, CampText | 'puncte'>, eticheta: string, unitate: string | null): ReactNode => {
+  const camp = (k: Exclude<CampFreza, CampText | 'puncte' | 'materiale'>, eticheta: string, unitate: string | null): ReactNode => {
     const p = vizibila(k) ? probleme[k] : undefined;
     return (
       <label className="freze-camp" key={k}>
@@ -734,6 +744,33 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
     return vazute && probleme.diametru
       ? t('freze.motiv.puncte.diametru', { r: textNumar(MARGINI_FREZA.diametru / 2, ro), max: textNumar(MARGINI_FREZA.diametru, ro) }) : null;
   })();
+
+  /**
+   * Greșeala seturilor pe material, sub ele (ADR 0305 §1): „Setul N, câmpul: motivul”, după aceeași regulă a ferestrei (după o
+   * schimbare a seturilor sau la „Salvează”); cu setul și câmpul ei, pentru câmpul de marcat.
+   */
+  const problemaSet = freza && vizibila('materiale') ? problemaMateriale(freza.materiale) : null;
+  const textMateriale = ((): string | null => {
+    if (problemaSet === null) return null;
+    const mic = (x: string): string => x.charAt(0).toLocaleLowerCase(limba) + x.slice(1);
+    const { motiv, set, camp: c } = problemaSet;
+    if (set === null) return textMotiv('materiale', motiv);
+    let text: string;
+    if (c === null || c === 'material') text = textMotiv('materiale', motiv);
+    else if (motiv === 'margini') text = t('freze.motiv.margini', { max: textNumar(MARGINI_FREZA[c], ro) });
+    else text = textMotiv(c, motiv);
+    return c === null || c === 'material' ? t('freze.motiv.set', { n: set + 1, text: mic(text) })
+      : t('freze.motiv.set.camp', { n: set + 1, camp: mic(etichetaSet(c)), text: mic(text) });
+  })();
+  /** Materialele scrise pe frezele bibliotecii, o dată fiecare (sugestiile câmpului „Materialul”). */
+  const sugestiiMaterial = useMemo(() => {
+    const vazute = new Map<string, string>();
+    for (const x of stare.freze) for (const s of x.materiale ?? []) {
+      const k = s.material.toLocaleLowerCase(limba);
+      if (!vazute.has(k)) vazute.set(k, s.material);
+    }
+    return [...vazute.values()].sort((a, b) => a.localeCompare(b, limba));
+  }, [stare.freze, limba]);
 
   /** Fișa frezei alese, doar de citit (vederea „Listă”, ADR 0302 §3): felul, silueta, geometria, valorile de lucru, nota. */
   const fisa = (f: Freza, catalogDeja?: boolean): ReactNode => {
@@ -813,6 +850,7 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
           <h4 id="freze-fisa-lucru">{t('freze.lucru')}</h4>
           {valori(lucru)}
         </section>
+        {f.materiale && f.materiale.length > 0 ? <MaterialeFisa seturi={f.materiale} ro={ro} /> : null}
         {f.nota !== undefined && f.nota !== '' ? (
           <p className="freze-fisa-nota"><span>{t('freze.nota')}</span> <span data-freze-valoare="nota">{f.nota}</span></p>
         ) : null}
@@ -1088,8 +1126,14 @@ export function FrezeleMele({ onInchide, focusInapoi, config }: {
                   {camp('pas', t('freze.pas'), t('freze.unitate.mm'))}
                   {camp('pasLateral', t('freze.pas-lateral'), t('freze.unitate.procent'))}
                 </div>
+                <CalculatorAvans unde="lucru" diametru={freza.diametru} taisuri={freza.taisuri} turatie={ciorna.turatie} dezactivat={doarCitire} ro={ro}
+                  onScrie={(n, f) => { setCiorna((c) => (c ? { ...c, turatie: n, avans: f } : c)); setMesaj(''); }} />
                 <p className="freze-ajutor">{t('freze.lucru.nota')}</p>
               </fieldset>
+              <EditorMateriale seturi={ciorna.materiale} dezactivat={doarCitire} sugestii={sugestiiMaterial} diametru={freza.diametru} taisuri={freza.taisuri} ro={ro}
+                implicit={{ turatie: ciorna.turatie, avans: ciorna.avans, plonjare: ciorna.plonjare, pas: ciorna.pas, pasLateral: ciorna.pasLateral }}
+                problema={problemaSet} textProblema={textMateriale}
+                onSeturi={(m) => { setCiorna((c) => (c ? { ...c, materiale: m } : c)); setMesaj(''); }} />
               <label className="freze-camp freze-camp-lat">
                 <span>{t('freze.nota')}</span>
                 <input type="text" data-freze-camp="nota" value={ciorna.nota} placeholder={t('freze.nota.ajutor')} disabled={doarCitire}

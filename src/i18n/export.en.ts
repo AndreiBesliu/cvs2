@@ -43,6 +43,7 @@ export const enExport = {
   'export.freza.titlu': 'The tool number (T) and the flat bit’s diameter, row by row. Between rows with different bits, the program changes the bit.',
   'export.freza.numar': 'Tool number (T)',
   'export.freza.biblioteca': 'From my bits',
+  'export.freza.material': 'With the values for “{set}”, the sheet’s material.',
   'export.freza.de-mana': 'Entered by hand',
   'export.freza.de-mana-ca': 'Entered by hand (as “{nume}”)',
   'export.biblioteca.schimbata': 'In the library, “{nume}” now has {ce}.',

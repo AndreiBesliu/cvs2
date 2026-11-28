@@ -17504,3 +17504,28 @@ după 18.1↑g-2. **Completed:** 28.11, 13:02.
   secțiunea Relieful; textele și manualul, în ambele limbi.
 - **Proba:** `test/unit/relief.simulare.test.ts` (7), `test/e2e/relief.simulare.spec.ts` (2). **Otrăvurile:** `18.1g3.py`,
   12 / 12. **Mărimea:** pornirea +0, totalul +1,9 kB (961,3 / 1 000).
+
+## 2026-11-28 — 16.A↑g-1…g-3: valorile frezei pe material și calculatorul avansului (Model: Claude Opus 5.5)
+
+**Prompt:** mesajul sesiunii principale din 28.11, 09:40, cu cuvântul owner-ului („Porneste sesiunile, pune-le sa continue cu
+ce aveau la rand”): după f-5, „g (valorile pe material), tot cu recomandările acolo unde sunt întrebări”. **Started:** 28.11,
+10:30, pe `wip/16.A-freze-g`, din vârful lui 16.A↑f-5. **Completed:** 28.11.
+
+- **ADR 0305 propus**, cu patru întrebări și recomandările aplicate (1a seturile în freză, 2a potrivirea pe cuvinte, 3a
+  calculatorul care doar scrie, 4a CSV-ul doar cu setul implicit); feliile g-1, g-2, g-3.
+- **Probele întâi:** `freza.materiale.test.ts` (judecata pe set și câmp, cuvintele, potrivirea, valorile, salvarea,
+  fișierul, importul, îmbinarea în cont, 16 seturi în 8 kB), `calculatorAvans.test.ts` (valorile socotite de mână),
+  `freze.materiale.spec.ts`, `freze.material.proiect.spec.ts`, `freze.calculator.spec.ts`.
+- **g-1:** câmpul `materiale` pe freză (cel mult 16: cu 20, cea mai mare freză desenată trecea aproape de 8 kB-ul contului),
+  `problemaMateriale`, `setPentru`, `valoriPeMaterial`; editorul seturilor și tabelul din fișă (`src/app/MaterialeFreza.tsx`).
+- **g-2:** Tăierea și fereastra exportului văd frezele cu valorile setului potrivit materialului foii active, cu nota „Cu
+  valorile pentru „MDF”, materialul foii.”; documentul rămâne v32.
+- **g-3:** calculatorul avansului (`src/model/calculatorAvans.ts`), sub valorile de lucru și în fiecare set.
+- **Găsit pe drum:** o înlocuire la import punea deja freza adusă peste cea din bibliotecă, deci un CSV păstra seturile fără
+  nimic nou; parametrul `pastreaza`, scris întâi, a ieșit.
+- **Otrăvurile** (`test/otravuri/16.A-g.py`): 36 / 36 (22 pe model, 14 e2e). G27 (ultimul set scos rămâne pe freza salvată)
+  scăpase: proba cerea „niciun tabel” înainte să apară fișa, deci trecea în gol; acum cere întâi fișa, și o prinde.
+- **Mărimea:** pornirea 112,1 kB, neschimbată (cu ușa și cu Atelierul 117,9 / 125); totalul 951,1 → 953,8 / 1 000 (față de vârful
+  lui f-5).
+- **Documentele:** ADR 0305 (și indexul), fișa etapei 3, nota liniei, manualul în ambele limbi, traducerile, registrul
+  otrăvurilor.

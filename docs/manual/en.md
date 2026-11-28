@@ -1611,6 +1611,20 @@ back what was there (in **List**, it also closes the editor). If you pick anothe
 are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
 first; projects that use it keep their copy.
 
+**Values per material**: besides the working values, a bit can have one set per material (at most 16). **A set for a
+material** adds one, starting from the current working values, with the material to type; **✕** removes it. On a sheet
+whose material (from **Name, size and material…**) has every word of a set, the bit cuts with that set’s values: “MDF”
+matches “MDF white 18” and “mdf 16”, “Hard wood” matches “hard wood oak” but not “soft wood”; capitals, accents and word
+order do not matter. If several match, the one with the most words wins (“MDF white” before “MDF”), and on a tie the first in
+the list. On a sheet without a material or without a match, the bit cuts with the working values. The card shows the sets in a
+table.
+
+**The feed calculator**, folded under the working values and in each set, fills in the feed from the **Chip load (fz)**:
+feed = spindle speed × flutes × fz, rounded to 1 mm/min. With a **Cutting speed (Vc)** typed, it also fills in the spindle
+speed, from the diameter: spindle speed = Vc × 1000 / (π × diameter), rounded to 10 rpm (Vc = 300 m/min on Ø6 gives 15,920 rpm;
+with 2 flutes and fz = 0.05 mm, a feed of 1,592 mm/min). The plunge stays yours. Without the number of flutes (under
+Geometry) or with a result outside the limits, it says why and fills in nothing; fz and Vc are not kept.
+
 **The standard bits** come by themselves: the first time the window or the properties panel opens, the library gets six common
 bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s
 default values (18,000 rpm, a feed of 1,000 mm/min, a plunge of 300 mm/min). Change them afterwards to match your bits. They
@@ -1624,7 +1638,8 @@ computer. **Import…** also reads a CSV (saved from Excel, for example) with a 
 the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
 1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
 Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
-“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted.
+“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted. The values per material travel only in the JSON
+file: a CSV does not have them, and imported over a bit with sets, it leaves them.
 
 At the bottom, the window says where the library lives: **Only in this browser** (without an account). In a private window or with the site’s
 data blocked, the bits last only as long as the tab, and the window says so. A library written by a newer version of the app
@@ -1676,7 +1691,8 @@ feed, plunge), its cutting length, its step down and, for a pocket, its stepover
 bottom and the rest bits stay. The T number is the library's, if it is free in the project; otherwise that of an identical
 bit (same diameter, same shape, same spindle speed), otherwise the smallest free one, and a note under the list says so. The
 list shows the chosen shapes' library bit, **Entered by hand** when they share a bit typed in the export window, or “—” when
-they have different bits.
+they have different bits. On a sheet with a material, the chosen bit takes the values of its matching set (see
+**Values per material** in [My bits](#freze)), and a note under the list names the set.
 
 **My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
 the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under
@@ -2154,7 +2170,10 @@ cut: flat ones on a profile, a pocket or drilling, V bits on a V-carve. Once pic
 (its own, if no other bit in the window has it; otherwise that of the same bit, if there is one; otherwise the lowest free one),
 the diameter, the shape, the step-down and, for a pocket, the stepover; **Export** writes it to the project with its working
 values (spindle speed, feed, plunge) and its cutting length. A diameter or shape changed by hand makes it **Entered by hand**:
-the project no longer records that it came from the library. You can change the T number without losing it.
+the project no longer records that it came from the library. You can change the T number without losing it. On a sheet with
+a material, the list gives the values of the bit’s matching set (“With the values for “MDF”, the sheet’s material.”); a
+material changed after the choice does not change the bit by itself: the “changed in the library” note shows the difference,
+with **Take the new values**.
 
 A bit **Entered by hand** has, in the Bit group, right under the **From my bits** list, a collapsed row that says the spindle
 speed, feed and plunge it cuts with (for example “Spindle speed, feed and plunge: the defaults (18,000 rpm, 1,000 and 300

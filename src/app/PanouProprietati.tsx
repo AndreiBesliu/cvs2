@@ -19,6 +19,7 @@ import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { frezaBibliotecii, frezePotrivite, operatiiCuFreza } from '../model/alegereFreza.ts';
+import { valoriPeMaterial } from '../model/freza.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
@@ -439,9 +440,12 @@ export function PanouProprietati({
   // Freza din bibliotecă (ADR 0300 §4): doar frezele care merg pe toate operațiile alese; aleasă, le schimbă freza și pașii,
   // într-un pas de anulare. Arătată e freza comună din bibliotecă; altfel „Scrisă de mână” (aceeași freză pe toate) sau „—”.
   // Numărul T din proiect poate fi altul decât al bibliotecii (ocupat de altă freză): nota o spune.
-  const frezeOferite = frezePotrivite(biblioteca.freze, operatiiAlese);
+  // Cu valorile setului potrivit materialului foii (ADR 0305 §3): freza aleasă le dă operațiilor, iar nota spune setul.
+  const peMaterial = biblioteca.freze.map((f) => valoriPeMaterial(f, foaie ? materialFoaie(foaie) : null));
+  const frezeOferite = frezePotrivite(peMaterial.map((x) => x.freza), operatiiAlese);
   const idBiblioteca = frezaBibliotecii(operatiiAlese);
   const frezaAleasa = frezeOferite.find((f) => f.id === idBiblioteca) ?? null;
+  const setAles = frezaAleasa ? peMaterial.find((x) => x.freza.id === frezaAleasa.id)?.set ?? null : null;
   const sculeEgale = operatiiAlese.every((o) => jsonCanonic(o.scula) === jsonCanonic(operatiiAlese[0]?.scula ?? null));
   const numarAles = frezaAleasa ? operatiiAlese[0]?.scula.numar : undefined;
   const alegeFreza = (id: string): void => {
@@ -618,6 +622,7 @@ export function PanouProprietati({
       {frezaAleasa && numarAles !== undefined && numarAles !== frezaAleasa.numar && (
         <p className="prop-nota" data-nota="freza-numar">{t('prop.freza.numar', { aici: numarAles, biblioteca: frezaAleasa.numar })}</p>
       )}
+      {frezaAleasa && setAles !== null && <p className="prop-nota" data-nota="freza-material">{t('prop.freza.material', { set: setAles })}</p>}
       {refuzFreza?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="freza">{refuzFreza.motiv}</p>}
       <PanouRoluri piese={piese} cheie={cheie} />
     </section>

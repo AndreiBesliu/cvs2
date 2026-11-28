@@ -66,7 +66,18 @@ export type FrezaFaraNume = {
   readonly nota?: string | undefined;
   /** Grupul omului (ADR 0302 §4); lipsă, freza stă pe felul ei. */
   readonly grup?: string | undefined;
+  /**
+   * Valorile de lucru pe material (ADR 0305 §1): cel mult 16 seturi, potrivite cu eticheta foii pe cuvinte (`setPentru`);
+   * valorile de mai sus rămân setul implicit („Orice material”).
+   */
+  readonly materiale?: readonly SetMaterial[] | undefined;
 };
+
+/** Cele cinci valori de lucru ale unui set pe material, în ordinea din editor. */
+export const CAMPURI_SET = ['turatie', 'avans', 'plonjare', 'pas', 'pasLateral'] as const;
+export type CampSet = (typeof CAMPURI_SET)[number];
+/** Un set de valori de lucru pe material (ADR 0305 §1): numele materialului și cele cinci valori, cu marginile frezei. */
+export type SetMaterial = { readonly material: string } & { readonly [C in CampSet]: number };
 
 /** O freză: câmpurile, numele și ce mai ține o versiune mai nouă a aplicației (câmpurile necunoscute rămân). */
 export type Freza = FrezaFaraNume & { readonly nume: string; readonly [cheie: string]: unknown };
@@ -95,17 +106,22 @@ export const MARGINI_FREZA = {
   pasLateral: 50,
   /** Câte freze ține o bibliotecă (ADR 0300 §7). */
   freze: 500,
+  /** Câte seturi pe material ține o freză și cât de lung e numele materialului (ADR 0305 §1). */
+  materiale: 16,
+  material: 40,
 } as const;
 
 export type CampFreza = 'nume' | 'diametru' | 'unghi' | 'varf' | 'tais' | 'taisuri' | 'numar' | 'turatie' | 'avans' | 'plonjare'
-  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza' | 'treapta' | 'puncte';
+  | 'pas' | 'pasLateral' | 'nota' | 'grup' | 'raza' | 'treapta' | 'puncte' | 'materiale';
 /**
  * Ce nu e bine la punctele siluetei desenate: lipsesc (sau nu sunt o listă), sunt sub 2 sau peste 200, un punct nu e o pereche
  * de numere în margini, primul nu e (0, 0), r nu crește strict, h scade, ultimul r nu e jumătatea diametrului.
  */
 export type MotivPuncte = 'lipsa' | 'puncte-putine' | 'puncte-multe' | 'puncte-numar' | 'puncte-inceput' | 'puncte-r' | 'puncte-h' | 'puncte-capat';
 export type MotivFreza = 'lipsa' | 'margini' | 'intreg' | 'varf' | 'con' | 'nume-gol' | 'nume-lung' | 'nume-caractere'
-  | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere' | MotivPuncte;
+  | 'nume-folosit' | 'nota-lunga' | 'grup-lung' | 'grup-caractere' | MotivPuncte | MotivMateriale;
+/** Ce nu e bine la seturile pe material (ADR 0305 §1): prea multe; numele materialului gol, lung, cu caractere oprite, dublat. */
+export type MotivMateriale = 'materiale-multe' | 'material-gol' | 'material-lung' | 'material-caractere' | 'material-folosit';
 export type ProblemeFreza = Readonly<Partial<Record<CampFreza, MotivFreza>>>;
 
 const finit = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -148,6 +164,74 @@ export function problemaPuncte(puncte: unknown, diametru: number | null): { read
   const k = P.length - 1;
   if (diametru !== null && Math.abs(P[k]![0] - diametru / 2) > 1e-9) return { motiv: 'puncte-capat', punct: k };
   return null;
+}
+
+/**
+ * Cuvintele unui material (ADR 0305 §2): fără majuscule și fără diacritice, despărțite de orice nu e literă sau cifră
+ * („MDF-alb 18” dă „mdf”, „alb”, „18”).
+ */
+export function cuvinteMaterial(s: string): string[] {
+  return s.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('ro').split(/[^\p{L}\p{N}]+/u).filter((c) => c !== '');
+}
+
+/** Cheia unui set: cuvintele lui, fără dubluri, în ordine (două seturi cu aceeași cheie se potrivesc cu aceleași foi). */
+const cheieMaterial = (s: string): string => [...new Set(cuvinteMaterial(s))].sort().join(' ');
+
+/**
+ * Prima greșeală a seturilor pe material (ADR 0305 §1), cu setul și câmpul la care e (null: a listei întregi sau a setului
+ * întreg), sau null dacă sunt bune. Valorile au marginile valorilor frezei; numele, ≤ 40 de caractere, cu cel puțin un
+ * cuvânt, unic după cuvinte (`cheieMaterial`).
+ */
+export function problemaMateriale(m: unknown): { readonly motiv: MotivFreza; readonly set: number | null; readonly camp: 'material' | CampSet | null } | null {
+  if (!Array.isArray(m)) return { motiv: 'lipsa', set: null, camp: null };
+  if (m.length > MARGINI_FREZA.materiale) return { motiv: 'materiale-multe', set: null, camp: null };
+  const vazute = new Set<string>();
+  for (let i = 0; i < m.length; i++) {
+    const x: unknown = m[i];
+    if (typeof x !== 'object' || x === null || Array.isArray(x)) return { motiv: 'lipsa', set: i, camp: null };
+    const s = x as Record<string, unknown>;
+    const nume = s['material'];
+    const greseala = (motiv: MotivFreza): { motiv: MotivFreza; set: number; camp: 'material' } => ({ motiv, set: i, camp: 'material' });
+    if (typeof nume !== 'string' || cuvinteMaterial(nume).length === 0) return greseala('material-gol');
+    // eslint-disable-next-line no-control-regex
+    if (/[\u0000-\u001f\u007f-\u009f]/u.test(nume)) return greseala('material-caractere');
+    if ([...nume.normalize('NFC').trim()].length > MARGINI_FREZA.material) return greseala('material-lung');
+    const k = cheieMaterial(nume);
+    if (vazute.has(k)) return greseala('material-folosit');
+    vazute.add(k);
+    for (const c of CAMPURI_SET) {
+      const motiv = interval(s[c], MARGINI_FREZA[c], c === 'turatie');
+      if (motiv) return { motiv, set: i, camp: c };
+    }
+  }
+  return null;
+}
+
+/**
+ * Setul unei freze pentru eticheta de material a foii (ADR 0305 §2): unul ale cărui cuvinte sunt toate printre ale etichetei;
+ * dintre ele, cel cu cele mai multe cuvinte, iar la egalitate primul din listă. Null fără etichetă, fără seturi sau fără
+ * potrivire.
+ */
+export function setPentru(f: Pick<FrezaFaraNume, 'materiale'>, eticheta: string | null): SetMaterial | null {
+  if (eticheta === null || !Array.isArray(f.materiale)) return null;
+  const cuvinte = new Set(cuvinteMaterial(eticheta));
+  if (cuvinte.size === 0) return null;
+  let ales: SetMaterial | null = null, cate = 0;
+  for (const s of f.materiale) {
+    const c = new Set(cuvinteMaterial(s.material));
+    if (c.size > cate && [...c].every((x) => cuvinte.has(x))) { ales = s; cate = c.size; }
+  }
+  return ales;
+}
+
+/**
+ * Freza cu valorile de lucru ale setului potrivit materialului (ADR 0305 §3): cele cinci valori ale setului, restul
+ * neatins; fără potrivire, chiar freza dată. `set` e numele setului folosit (null: implicitul).
+ */
+export function valoriPeMaterial<F extends FrezaFaraNume>(f: F, eticheta: string | null): { readonly freza: F; readonly set: string | null } {
+  const s = setPentru(f, eticheta);
+  if (s === null) return { freza: f, set: null };
+  return { freza: { ...f, turatie: s.turatie, avans: s.avans, plonjare: s.plonjare, pas: s.pas, pasLateral: s.pasLateral }, set: s.material };
 }
 
 /** Numele, pentru unicitate: fără spațiile de la capete și dublate, cu literele compuse unite, fără deosebire de majuscule. */
@@ -220,6 +304,7 @@ export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: 
   pune('pasLateral', interval(f.pasLateral, MARGINI_FREZA.pasLateral));
   if (f.nota !== undefined && (typeof f.nota !== 'string' || [...f.nota].length > MARGINI_FREZA.nota)) p.nota = 'nota-lunga';
   if (f.grup !== undefined) pune('grup', problemaGrup(f.grup));
+  if (f.materiale !== undefined) pune('materiale', problemaMateriale(f.materiale)?.motiv ?? null);
   return p;
 }
 
@@ -245,6 +330,9 @@ function curata<F extends Freza>(f: F): F {
     ...(areTreapta(f.fel) ? { treapta: f.treapta } : {}),
     // Punctele siluetei desenate, rotunjite la `PAS_PUNCT`: încap în cont, iar judecata le-a văzut deja așa.
     ...(arePuncte(f.fel) && Array.isArray(f.puncte) ? { puncte: puncteRotunjite(f.puncte) } : {}),
+    // Seturile pe material, cu numele curățate la capete (câmpurile necunoscute ale unui set rămân); o listă goală pleacă.
+    materiale: Array.isArray(f.materiale) && f.materiale.length > 0
+      ? f.materiale.map((x) => ({ ...x, material: x.material.normalize('NFC').trim().replace(/\s+/gu, ' ') })) : undefined,
   };
   // Un câmp opțional golit (tăișul, nota) pleacă de tot, nu rămâne ca `undefined`.
   for (const k of Object.keys(c)) if (c[k] === undefined) delete c[k];
@@ -286,6 +374,7 @@ function formaFreza(x: Record<string, unknown>): boolean {
     && ['unghi', 'varf', 'raza', 'treapta', 'tais', 'taisuri'].every((k) => opt(x[k]))
     && (x['nota'] === undefined || typeof x['nota'] === 'string')
     && (x['grup'] === undefined || typeof x['grup'] === 'string')
+    && (x['materiale'] === undefined || Array.isArray(x['materiale']))
     && (x['puncte'] === undefined || (Array.isArray(x['puncte'])
       && x['puncte'].every((p: unknown) => Array.isArray(p) && p.length === 2 && finit(p[0]) && finit(p[1]))));
 }
@@ -460,7 +549,8 @@ export type PoliticaImport = 'inlocuieste' | 'amandoua' | 'sari';
 /**
  * Frezele unui fișier, în bibliotecă: una bună cu un nume nou intră; cu un nume care există (și unul adus mai devreme din
  * același fișier) o înlocuiește pe aceea (id-ul rămâne, versiunea crește), intră cu un nume liber („(2)”) sau se sare.
- * Una greșită se sare. Dacă lista ar trece de plafon, nimic.
+ * Una greșită se sare. Dacă lista ar trece de plafon, nimic. La o înlocuire, câmpurile lipsă din freza adusă rămân ale celei din
+ * bibliotecă (`cuFreza`): un CSV, care nu poartă seturile pe material, le lasă neatinse (ADR 0305 §1).
  */
 export function cuImport(
   lista: readonly FrezaSalvata[], noi: readonly Freza[], politica: PoliticaImport, idNou: () => string, acum: number,
