@@ -26,6 +26,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { CatalogBiblioteca, CategorieBiblioteca, RandBiblioteca } from '../../shared/biblioteca.ts';
 import { instaleazaDinBiblioteca, noutatiDupa, stareRand, type StareRand } from './biblioteca.ts';
 import { CapturaMarita } from './CapturaMarita.tsx';
+import { useEscapeFereastra } from '../ui/escapeFereastra.ts';
 import { categoriiPrezente, cauta, cuvinteCautate } from './cautare.ts';
 import { FaraStocare, octetiDate, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
 import { textMarime } from './marimeText.ts';
@@ -126,19 +127,9 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     }
   });
   // Escape închide fereastra și cu focusul căzut pe pagină (butonul apăsat lucrează, dezactivat): în fereastră îl prinde
-  // `tasta`, aici doar ce pleacă de pe `body`, cât nimic nu stă deasupra.
-  const laInchidere = useRef(onInchide);
-  laInchidere.current = onInchide;
-  useEffect(() => {
-    if (acoperita || deScos) return undefined;
-    const pePagina = (e: globalThis.KeyboardEvent): void => {
-      if (e.key !== 'Escape' || e.target !== document.body || e.defaultPrevented) return;
-      e.preventDefault();
-      laInchidere.current();
-    };
-    document.addEventListener('keydown', pePagina);
-    return () => { document.removeEventListener('keydown', pePagina); };
-  }, [acoperita, deScos]);
+  // `tasta` (care îl oprește), aici ce pleacă de pe `body`, cât nimic nu stă deasupra. Prin ascultătorul comun (3.Ay): o
+  // captură mărită, deschisă după fereastră, îl ia ea.
+  useEscapeFereastra(onInchide, !acoperita && !deScos);
   // După întrebarea de la „Scoate”, focusul se întoarce pe gestul paginii (sau, dacă extensia a plecat, pe ×).
   const intors = useRef(false);
   useEffect(() => {

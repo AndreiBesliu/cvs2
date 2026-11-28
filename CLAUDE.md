@@ -1245,7 +1245,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   lucrarea primită, Aspectul, ferestrele extensiilor și întrebarea de la închiderea unei extensii trec prin
   `useEscapeFereastra` (`src/ui/escapeFereastra.ts`: pe `document`, pe urcare, cu `defaultPrevented`, apoi oprit).
   **O fereastră nouă își ia Escape-ul de la `useEscapeFereastra`, iar proba ei pune focusul pe `body` înaintea
-  tastei.** Otrăvurile 6 / 6 și 8 / 8; pornirea și totalul, din porțile ramurii.
+  tastei.** Otrăvurile 6 / 6 și 8 / 8; pornirea și totalul, din porțile ramurii. **Din 3.Ay (28.11), la fel dialogurile
+  rămase: ale imprimantei, captura mărită, confirmarea senderului și dialogurile de rezervă. Un dialog dintr-o fereastră
+  ținută montată și ascunsă (Mașina, Imprimanta) își dă cutia, ca al treilea argument. Dintre ferestrele deschise, Escape
+  îl ia doar ultima care se vede (stiva din ascultător).**
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
