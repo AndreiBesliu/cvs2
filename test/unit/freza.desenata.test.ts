@@ -199,6 +199,7 @@ test('datele: o freză desenată ținută sau adusă din fișier se citește; pu
   // Și pe o freză de alt fel, câmpul `puncte` cu altă formă o face greșită (ca orice câmp cunoscut); cu forma bună, rămâne.
   const plata: Freza = { ...DESENATA, fel: 'plata', diametru: 6, puncte: undefined };
   assert.equal(frezaImportata({ ...plata, puncte: 'x' }), null);
+  assert.equal(frezaImportata({ ...plata, puncte: [[0, 0], [3, '0']] }), null);
   assert.ok(frezaImportata({ ...plata, puncte: [[0, 0], [3, 0]] }));
 });
 
