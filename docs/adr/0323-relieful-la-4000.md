@@ -101,3 +101,20 @@ ADR 0310 §4 punea deja bazinul de workere la 4000² („Fluiditatea la 4000² (
 feliei 18.1↑h”), deci liniile pe workere nu redeschid nimic. Ordinea: refuzul punctelor înaintea cotelor (5a); liniile pe
 workerele bazinului CAM; distanța la blocurile piramidei mai ieftină; câmpul pe benzi (2a). Măsurătoarea pe calculatorul
 owner-ului (3) rămâne a lui: ea spune dacă, după ele, pragul de 10 s e trecut (atunci, abia atunci, GPU-ul, cu ADR-ul lui).
+
+## Implementarea 5a (felia 18.1↑h-3)
+
+În `treceriRelief` (`src/cam/reliefFinisare.ts`), liniile fiecărui relief, verificările lor și numărul punctelor de pe trecere se
+fac înaintea oricărei cote, deci refuzul „pe trecere” vine fără calcul. Pentru refuzul punctelor × trecerilor, numărul trecerilor
+are o margine de jos din vârful unui singur punct al traseului: pe fiecare relief, punctul de linie cel mai apropiat de celula
+cea mai joasă (dintre celulele la fel de joase, cea din mijlocul lor, ca pe un fund plat bila să stea pe fund, nu lângă pantă),
+socotit cu aceleași segmente, în aceeași ordine. Cea mai adâncă cotă e cel mult vârful lui, deci marginea nu trece niciodată de
+numărul adevărat (cu toleranța 1e-6, mai largă decât a numărului, 1e-9); peste plafon chiar cu ea, refuzul vine acum, cu același
+motiv; altfel, verdictul rămâne după cote. Indiciul piramidei (celula maximului de la segmentul dinainte) se pune la loc după
+punctul ales, deci calculul de după pornește ca înainte: programele care ies sunt aceleași, octet cu octet.
+
+- **Măsurat:** la 4000² cu pasul 0,3, refuzul vine în 2,9 s (pregătirea câmpului și liniile), nu în 187 s.
+- **Proba:** `test/unit/reliefFinisare.puncte.test.ts` (o groapă cu fund plat într-un platou ondulat, 204 800 de puncte pe trecere):
+  97 de treceri ies, 98 și 200 sunt refuzate fără cote (sub un sfert din timpul programului întreg), iar cu un ac în care bila nu
+  intră (cea mai joasă celulă) refuzul vine după cote, același. **Otrăvurile:** `test/otravuri/18.1h3.py`, 6 / 6.
+

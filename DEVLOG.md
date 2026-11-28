@@ -17352,3 +17352,13 @@ e următoarea în ordinea din ADR 0310 §8). **Started:** 28.11, 10:08, pe `wip/
 - **ADR 0323:** secțiunea bătăilor, plus „Ce urmează”: 5a, 1a, 2a, cu recomandarea aplicată, fără GPU.
 - Doar probe și documente; nimic în aplicație.
 
+## 2026-11-28 — 18.1↑h-3: plafonul punctelor, spus înaintea cotelor (Model: Claude Opus 5.5)
+
+**Prompt:** același cuvânt; ADR 0323, întrebarea 5a, cu recomandarea aplicată („mergi înainte cu recomandarea”). **Started:**
+28.11, 11:04, pe `wip/18.1-relief`, după 18.1↑h-2. **Completed:** 28.11, 11:20.
+
+- **CAM-ul** (`src/cam/reliefFinisare.ts`): liniile și punctele de pe trecere, înaintea cotelor; marginea de jos a trecerilor din
+  vârful punctului de lângă cea mai joasă celulă, socotit exact; refuzul la 4000² cu pasul 0,3, în 2,9 s (era 187 s).
+- **Proba:** `test/unit/reliefFinisare.puncte.test.ts` (3). **Otrăvurile:** `18.1h3.py`, 6 / 6, martorul a scăpat.
+- Programele care ies, octet cu octet; nimic altceva în aplicație.
+

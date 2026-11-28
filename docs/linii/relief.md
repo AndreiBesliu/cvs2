@@ -317,3 +317,8 @@ degroșarea și finisarea pe relief), unde stă relieful în document și unde s
   (refuzul înaintea cotelor), apoi 1a (liniile pe workere, distanța mai ieftină) și 2a (câmpul pe benzi), fără GPU.
   - **Surplusul câmpului conservativ pe o creastă e exact urcarea(φ) − urcarea(φ − h)** (grila de calcul e aliniată cu a
     reliefului): o probă pe CL care îl ia mai larg nu prinde o urcare greșită a bilei.
+- **28.11: 18.1↑h-3 gata pe ramură** (5a): refuzul punctelor vine înaintea cotelor (la 4000² cu pasul 0,3, în 2,9 s, nu în 187 s);
+  programele care ies, octet cu octet. Urmează 1a: liniile finisării pe workerele bazinului CAM.
+  - **O margine de jos a trecerilor dintr-un punct al traseului e sigură doar dacă vârful lui e socotit ca în bucla mare** (aceleași
+    segmente, aceeași ordine), cu indiciul piramidei pus la loc și cu toleranța mai largă decât a numărului adevărat.
+
